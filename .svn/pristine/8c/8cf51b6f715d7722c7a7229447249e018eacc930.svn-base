@@ -1,0 +1,109 @@
+import React from 'react';
+import { Form, Row, Col, Button } from 'antd';
+import PropTypes from 'prop-types';
+import PeriodSelect from '../PeriodSelect/PeriodSelect.js';
+import GlobalSelect from '../GlobalSelect/GlobalSelect.js';
+import GlobalInput from '../GlobalInput/GlobalInput.js';
+import GlobalRangePicker from '../GlobalRangePicker/GlobalRangePicker.js';
+import style from '../../config/global.less';
+// import styles from './style.css';
+import { deleteJsonEmptyProps } from '../../utils/util.js';
+
+class OutExportsInputs extends React.Component {
+  state = {
+
+  }
+  render() {
+    const { form } = this.props;
+    return (
+      <span>
+        {
+          form.validateFields((err, fieldsValue) => {
+            const formParams = deleteJsonEmptyProps(fieldsValue);
+            Object.keys(formParams).map((name, index) => {
+              const values = Object.values(formParams);
+              return (<input name={name} value={values[index]} />);
+            });
+          })
+        }
+      </span>
+    );
+  }
+}
+
+function GlobalSearchForm(props) {
+  const { formCollapse, formItems, collapseFormItems,
+    autoCol, form, dispatch, ...rest } = props;
+  let display = { display: 'none' };
+  if (formCollapse) {
+    display = { display: 'block' };
+  }
+  const exportSubmitHandle = (e) => {
+    e.preventDefault();
+    e.target.submit();
+  };
+  // 根据form搜索条件生成导出form  
+  return (
+    <span>
+      <Form layout="inline" className={style.coustomFormLyout} {...rest }>
+        {
+          formItems.map((rowData, index) => {
+            return (
+              <Row key={index}>
+                {
+                  rowData.map((v, i) => {
+                    const temp = autoCol || v.formCol;
+                    return (
+                      <Col {...temp} key={i}>
+                        {v.type === 'select' ? <GlobalSelect {...v} form={props.form} /> : (
+                          v.type === 'period' ? <PeriodSelect {...v} form={props.form} /> : (
+                            v.type === 'text' ? <GlobalInput {...v} form={props.form} /> : (
+                              v.type === 'rangePicker' ? <GlobalRangePicker {...v} form={props.form} /> : (
+                                v.type === 'custom' ? v.component : '')
+                            )
+                          )
+                        )}
+                      </Col>
+                    );
+                  })
+                }
+              </Row>
+            );
+          })
+        }
+        {
+          collapseFormItems.map((rowData, index) => {
+            return (
+              <Row key={index} style={display}>
+                {
+                  rowData.map((v, i) => {
+                    const temp = autoCol || v.formCol;
+                    return (
+                      <Col {...temp} key={i}>
+                        {v.type === 'select' ? <GlobalSelect {...v} form={props.form} /> : (
+                          v.type === 'period' ? <PeriodSelect {...v} form={props.form} /> : (
+                            v.type === 'text' ? <GlobalInput {...v} form={props.form} /> : (
+                              v.type === 'rangePicker' ? <GlobalRangePicker {...v} form={props.form} /> : (
+                                v.type === 'custom' ? v.component : '')
+                            )
+                          )
+                        )}
+                      </Col>
+                    );
+                  })
+                }
+              </Row>
+            );
+          })
+        }
+      </Form >
+    </span>
+  );
+}
+
+GlobalSearchForm.propTypes = {
+  formItems: PropTypes.array,
+  buttonsCol: PropTypes.object,
+};
+// const GlobalSearchFormWrapped = Form.create()(GlobalSearchForm);
+export default GlobalSearchForm;

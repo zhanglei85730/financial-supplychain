@@ -1,0 +1,14 @@
+export default {
+  namespace: 'sideMenu',
+  state: { collapsed: false },
+  reducers: {
+    collapsed(state, { payload }) {
+      return { ...state, collapsed: payload };
+    },
+    ChangeActiveKey(state, { payload: activeKey }) {
+      return { activeKey };
+    },
+  },
+  effects: {},
+  subscriptions: {},
+};

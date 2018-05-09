@@ -1,0 +1,18 @@
+.coustomFormLyout{
+    :global{
+        .ant-form-item-control-wrapper{
+            flex: 1 1 0%;
+        }
+        .ant-form-item{display:flex;}
+        .ant-calendar-picker{width:100%}
+        button{margin:0 4px}
+    }
+}
+:global{
+    .ant-upload-list-item{
+        background:#e4f3f9
+    }
+    .ant-table-thead > tr > th, .ant-table-tbody > tr > td{
+        padding: 10px 10px!important;
+    }
+}

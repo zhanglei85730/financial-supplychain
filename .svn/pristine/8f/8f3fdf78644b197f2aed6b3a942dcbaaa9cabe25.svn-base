@@ -1,0 +1,53 @@
+import React from 'react';
+import { Modal, Progress, Icon } from 'antd';
+import PropTypes from 'prop-types';
+// import FormButtons from './FormButtons.js';
+// import consts from '../../config/const.js';
+// import GlobalSearchForm from '../../components/GlobalSearchForm/GlobalSearchForm.js';
+
+function PushEasModal({ dispatch }, context) {
+  const handleOk = () => {
+    // dispatch({ type: 'purchaseOrders/pushEasModalRedece', payload: !context.pushEasModalVisible });
+  };
+  const handleCancel = () => {
+    dispatch({ type: 'purchaseOrders/pushEasClearResponseRedece', payload: [] });
+    dispatch({ type: 'purchaseOrders/pushEasModalRedece', payload: !context.pushEasModalVisible });
+  };
+  // 当前推送
+  const lastMessage = context.pushEasResponse.length > 0 ? context.pushEasResponse[context.pushEasResponse.length - 1] : {};
+  const { allTotal, total } = lastMessage;
+  let currentProgress = 1;
+  if (allTotal && total && typeof (allTotal) === 'number') {
+    currentProgress = total / allTotal * 100;
+  }
+  const listData = context.pushEasResponse;
+  const successColor = { color: '#1890ff' };
+  const failColor = { color: '#f5222d' };
+  return (
+    <Modal
+      title="推送到金蝶"
+      visible={context.pushEasModalVisible}
+      onOk={handleOk}
+      onCancel={handleCancel}
+    >
+      <Progress percent={currentProgress} status="active" />
+      {
+        listData.map((item, index) => {
+          const key = index;
+          if (item.type === 'ERROR') {
+            return <div style={failColor} key={key}> <Icon type="close-circle-o" />{item.msg}</div>;
+          } else {
+            return <div style={successColor} key={key}> <Icon type="check-circle-o" />{item.msg}</div>;
+          }
+        })
+      }
+    </Modal>
+  );
+}
+PushEasModal.contextTypes = {
+  pushEasModalVisible: PropTypes.bool,
+  pushEasResponse: PropTypes.array,
+};
+// const SearchFormWrapped = Form.create()(SearchForm);
+
+export default PushEasModal;

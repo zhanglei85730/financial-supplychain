@@ -1,0 +1,216 @@
+import React from 'react';
+import { Table, Alert } from 'antd';
+import PropTypes from 'prop-types';
+import packageConst from './packageConst.js';
+import consts from '../../config/const.js';
+import { changePagination, decimalTo4, decimalTo2 } from '../../utils/util.js';
+
+function DataTable({ dispatch, list, loading, selectedRowKeysArr, total }, context) {
+  const tdWidth = { width: 100 };
+  const columns = [{
+    title: '单据日期',
+    key: 'billDate',
+    dataIndex: 'billDate',
+    fixed: 'left',
+    width: 150,
+  },
+  {
+    title: '采购单号',
+    key: 'relateOrderId',
+    dataIndex: 'relateOrderId',
+    fixed: 'left',
+    width: 150,
+  },
+  {
+    title: '请款单号',
+    dataIndex: 'requestOrderId',
+    key: 'requestOrderId',
+    width: 150,
+  }, {
+    title: '单据类型',
+    dataIndex: '',
+    key: '',
+    ...tdWidth,
+    render: () => ('采购付款'),
+  }, {
+    title: '法人主体',
+    dataIndex: 'corporationName',
+    key: 'corporationName',
+    width: 180,
+  }, {
+    title: '供应商',
+    dataIndex: 'supplierName',
+    key: 'supplierName',
+    width: 250,
+  }, {
+    title: '币别',
+    dataIndex: 'currency',
+    key: 'currency',
+    ...tdWidth,
+  }, {
+    title: '汇率',
+    dataIndex: 'exchangeRate',
+    key: 'exchangeRate',
+    ...tdWidth,
+    render: decimalTo4,
+  }, {
+    title: '货款金额',
+    dataIndex: 'receiMoney',
+    key: 'receiMoney',
+    ...tdWidth,
+    render: decimalTo2,
+  }, {
+    title: '折扣',
+    dataIndex: 'discountAmt',
+    key: 'discountAmt',
+    ...tdWidth,
+    render: decimalTo2,
+  }, {
+    title: '运费',
+    dataIndex: 'shippingCost',
+    key: 'shippingCost',
+    ...tdWidth,
+    render: decimalTo2,
+  }, {
+    title: '留抵',
+    dataIndex: 'reduceDebt',
+    key: 'reduceDebt',
+    ...tdWidth,
+    render: decimalTo2,
+  }, {
+    title: '应付金额',
+    dataIndex: 'couldPay',
+    key: 'couldPay',
+    ...tdWidth,
+    render: decimalTo2,
+  }, {
+    title: '实付金额',
+    dataIndex: 'foreignPayMoney',
+    key: 'foreignPayMoney',
+    ...tdWidth,
+    render: decimalTo2,
+  }, {
+    title: '付款类型',
+    dataIndex: 'type',
+    key: 'type',
+    ...tdWidth,
+    render: (value) => {
+      let type = '';
+      switch (value) {
+        case '0':
+          type = '预付';
+          break;
+        case '1':
+          type = '账期';
+          break;
+        default:
+          type = '-';
+      }
+      return type;
+    },
+  }, {
+    title: '付款方式',
+    dataIndex: 'payType',
+    key: 'payType',
+    ...tdWidth,
+    render: consts.globalPayType,
+  }, {
+    title: '付款科目',
+    dataIndex: 'paySubject',
+    key: 'paySubject',
+    ...tdWidth,
+  }, {
+    title: '付款账户',
+    dataIndex: 'payAccount',
+    key: 'payAccount',
+    ...tdWidth,
+  }, {
+    title: '结算方式',
+    dataIndex: 'methodName',
+    key: 'methodName',
+    width: 220,
+  }, {
+    title: '请款人',
+    dataIndex: 'requesterName',
+    key: 'requesterName',
+    ...tdWidth,
+  }, {
+    title: '事业部',
+    dataIndex: 'orgName',
+    key: 'orgName',
+    width: 120,
+  }, {
+    title: '单据状态',
+    dataIndex: 'voucherStatus',
+    key: 'voucherStatus',
+    ...tdWidth,
+    render: consts.voucherStatusRender,
+  }, {
+    title: '单据号',
+    dataIndex: 'voucherNumber',
+    key: 'voucherNumber',
+    ...tdWidth,
+  }, {
+    title: '推送金蝶时间',
+    dataIndex: 'pushEasDate',
+    key: 'pushEasDate',
+    width: 180,
+  }, {
+    title: '金蝶生成凭证错误描述',
+    dataIndex: 'voucherErrorMessage',
+    key: 'voucherErrorMessage',
+    width: 220,
+  }];
+
+  const onSelectChange = (selectedRowKeys, selectedRows) => {
+    dispatch({ type: `${packageConst.modelNameSapce}/selectedRowKeys`, payload: selectedRowKeys });
+    dispatch({ type: `${packageConst.modelNameSapce}/selectedRows`, payload: selectedRows });
+  };
+  const rowSelection = {
+    selectedRowKeys: selectedRowKeysArr,
+    onChange: onSelectChange,
+    getCheckboxProps: record => ({
+      // Column configuration not to be checked
+      disabled: record.billDate === '本页合计' || record.billDate === '全部合计',
+      name: record.name,
+    }),
+  };
+  const changePaginationHandle = (page, pageSize) => {
+    changePagination(page, pageSize, dispatch, 'purchasePayment', context.queryParams);
+  };
+  const pageSizeChangeHandle = (current, size) => {
+    dispatch({ type: `${packageConst.modelNameSapce}/tableData`, payload: { offset: 0, limit: size } });
+    changePagination(current, size, dispatch, `${packageConst.modelNameSapce}`);
+  };
+  return (
+    <div>
+      <Alert message={`已选择${selectedRowKeysArr.length}项`} type="info" showIcon style={{ marginTop: '10px' }} />
+      <Table
+        columns={columns}
+        dataSource={list}
+        bordered
+        // table必须有key属性，可以将设置id为key
+        rowKey="id"
+        rowSelection={rowSelection}
+        loading={loading}
+        style={{ marginTop: '20px' }}
+        scroll={Object.assign(consts.globalTableScroll, { x: 3300 })}
+        pagination={{
+          total,
+          defaultPageSize: consts.defaultPageSize,
+          pageSizeOptions: consts.pageSizeOptions,
+          showSizeChanger: true,
+          hideOnSinglePage: false,
+          onChange: changePaginationHandle,
+          onShowSizeChange: pageSizeChangeHandle,
+          showTotal: () => (consts.GlobalShowTotal(total)),
+        }}
+      />
+    </div>
+  );
+}
+DataTable.contextTypes = {
+  queryParams: PropTypes.object,
+};
+
+export default DataTable;

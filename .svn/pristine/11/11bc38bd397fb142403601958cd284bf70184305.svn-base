@@ -1,0 +1,47 @@
+import React from 'react';
+import { Button } from 'antd';
+import PropTypes from 'prop-types';
+import styles from './GlobalExportForm.css';
+import * as util from '../../utils/util.js';
+
+function GlobalExportForm({ form, url, dispatch, reduceName }, context) {
+  const exportInputs = context.exportInputs;
+  const handleSubmit = (e) => {
+    const eventKeyId = e.target.id;
+    if (eventKeyId === 'export') {
+      form.validateFields((err, fieldsValue) => {
+        const formparams = util.deleteJsonEmptyProps(fieldsValue);
+        dispatch({ type: reduceName, payload: formparams });
+      });
+    }
+    if (eventKeyId === 'pusEas') {
+      form.validateFields((err, fieldsValue) => {
+        // const formparams = util.deleteJsonEmptyProps(fieldsValue);
+        // dispatch({ type: 'pureventKeyId === 'export 'chaseOrders/exportInputsReduce', payload: formparams });
+        // console.log(JSON.stringify(fieldsValue))
+      });
+    }
+  };
+  return (
+    <div className={styles.normal}>
+      <form action={url} method="get" onClick={handleSubmit}>
+        {
+          Object.keys(exportInputs).map((name, index) => {
+            const values = Object.values(exportInputs);
+            return (<input name={name} value={values[index]} type='hidden' />);
+          })
+        }
+        {/* <Button type="primary" id="pusEas" className={styles.marginSpace}>推送到金蝶</Button> */}
+        <Button htmlType="submit" id="export" className={styles.marginSpace}>导出</Button>
+      </form>
+    </div>
+  );
+}
+GlobalExportForm.contextTypes = {
+  exportInputs: PropTypes.object.required,
+};
+GlobalExportForm.PropTypes = {
+  url: PropTypes.string.required,
+  reduceName: PropTypes.string.required,
+};
+export default GlobalExportForm;

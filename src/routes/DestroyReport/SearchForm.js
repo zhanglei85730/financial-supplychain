@@ -1,0 +1,172 @@
+import React from 'react';
+import { Form, Row, Col, Button } from 'antd';
+import { connect } from 'dva';
+import PropTypes from 'prop-types';
+import FormButtons from './FormButtons.js';
+import consts from '../../config/const.js';
+import GlobalSearchForm from '../../components/GlobalSearchForm/GlobalSearchForm.js';
+import GlobalExportForm from '../../components/GlobalExportForm/GlobalExportForm.js';
+import packageConst from './packageConst.js';
+import { jsonToSelectOptions } from '../../utils/util.js';
+
+function SearchForm({
+  dispatch,
+  formCollapse,
+  form,
+  allVoucherStatus,
+  loading,
+  exportInputs,
+  getAccounts,
+  getDepts,
+  getSites,
+  selectedRowsArr,
+}) {
+  const formCol = formCollapse ? { md: 8, sm: 24 } : { md: 6, sm: 24 };
+  const collapseFormCol = { md: 8, sm: 24 };
+  const buttonsCol = {
+    type: 'custom',
+    formCol,
+    component: <FormButtons
+      form={form}
+      dispatch={dispatch}
+      formCollapse={formCollapse}
+      loading={loading}
+    />,
+  };
+  const formItemsConfig = [
+    // 第一行
+    [{
+      label: '销毁日期',
+      type: 'rangePicker',
+      id: 'queryDate',
+      formCol,
+    },
+    {
+      id: 'account',
+      // 同select属性,可以附加 select的属性
+      type: 'select',
+      label: '账号',
+      formCol,
+      // input数据
+      data: getAccounts.map((item, index) => {
+        return { value: item, key: index, text: item };
+      }),
+    },
+    {
+      id: 'deptment',
+      // 同select属性,可以附加 select的属性
+      type: 'select',
+      label: '部门',
+      formCol,
+      // input数据
+      data: getDepts.map((item, index) => {
+        return { value: item, key: index, text: item };
+      }),
+    }],
+  ];
+  const voucherStatus = [];
+  const voucherStatusObj = allVoucherStatus;
+
+  // 单据状态返回的是json
+  for (const key in voucherStatusObj) {
+    voucherStatus.push({ value: key, text: voucherStatusObj[key] });
+  }
+  const collapseFormItemsConfig = [
+    // 第二行
+    [{
+      id: 'siteGroupId',
+      // 同select属性,可以附加 select的属性
+      type: 'select',
+      label: '站点',
+      formCol: { ...collapseFormCol },
+      data: getSites.map((item, index) => {
+        return { value: item.siteId, key: index, text: item.nameCn };
+      }),
+    }, {
+      label: 'ID',
+      type: 'text',
+      id: 'orderId',
+      formCol: { ...collapseFormCol },
+    }, {
+      label: 'FNSKU',
+      type: 'text',
+      id: 'fnskus',
+      formCol: { ...collapseFormCol },
+    }],
+    [
+      {
+        label: '单据号',
+        type: 'text',
+        id: 'destroyOrderSn',
+        formCol: { ...collapseFormCol },
+      }, {
+        type: 'custom',
+        formCol: { md: 16 },
+        component: <FormButtons
+          form={form}
+          dispatch={dispatch}
+          formCollapse={formCollapse}
+        />,
+      }],
+  ];
+  let formItemsResult = formItemsConfig;
+  // form展开
+  if (!formCollapse) {
+    const formItemsConfigLastNode = formItemsConfig[formItemsConfig.length - 1];
+    formItemsResult = [formItemsConfigLastNode.concat([buttonsCol])];
+  }
+  const toolMarginTop = { marginTop: '20px' };
+  const marginLeft = { marginLeft: '10px' };
+  // 审核数据
+  const auditHandle = () => {
+    let ids = [];
+    if (Array.isArray(selectedRowsArr) && selectedRowsArr.length > 0) {
+      ids = selectedRowsArr.map((row) => {
+        if (row.hasOwnProperty('id')) {
+          return row.id;
+        }
+      });
+    }
+    dispatch({ type: 'destroyReport/audit', payload: { destroyIds: ids } });
+  };
+  return (
+    <span>
+      <GlobalSearchForm
+        formItems={formItemsResult}
+        formCollapse={formCollapse}
+        collapseFormItems={collapseFormItemsConfig}
+        dispatch={dispatch}
+        form={form}
+      />
+      <Row>
+        <Col style={toolMarginTop}>
+          <GlobalExportForm
+            url={`${consts.domainDestroyReport}/api/destroy/export`}
+            form={form}
+            exportInputs={exportInputs}
+            dispatch={dispatch}
+            reduceName={`${packageConst.modelNameSapce}/exportInputsReduce`}
+            buttonType="primary"
+          />
+          <Button style={marginLeft} onClick={auditHandle}>审核生成数据</Button>
+        </Col>
+      </Row>
+    </span>
+  );
+}
+SearchForm.propTypes = {
+  allOrg: PropTypes.array,
+  currency: PropTypes.array,
+  allCorporation: PropTypes.array,
+  allPaymentMethod: PropTypes.array,
+  allVoucherStatus: PropTypes.object,
+  exportInputs: PropTypes.object,
+  selectedRowsArr: PropTypes.array,
+  loading: PropTypes.bool,
+};
+const SearchFormWrapped = Form.create()(SearchForm);
+function mapStateToProps({ common, destroyReport }) {
+  const { loading, selectedRowsArr, exportInputs, getAccounts, getDepts, getSites } = destroyReport;
+  return { ...common, loading, selectedRowsArr, exportInputs, getAccounts, getDepts, getSites };
+}
+export default connect(mapStateToProps)(SearchFormWrapped);

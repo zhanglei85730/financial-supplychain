@@ -1,0 +1,77 @@
+import React from 'react';
+import { connect } from 'dva';
+import Proptypes from 'prop-types';
+import SearchForm from './SearchForm.js';
+import DataTable from './DataTable.js';
+import styles from './style.css';
+
+class CommonInbound extends React.Component {
+  getChildContext() {
+    return {
+      allOrg: this.props.allOrg,
+      currency: this.props.currency,
+      allCorporation: this.props.allCorporation,
+      allPaymentMethod: this.props.allPaymentMethod,
+      allWarehouse: this.props.allWarehouse,
+      allVoucherStatus: this.props.allVoucherStatus,
+      supplierModalVisibile: this.props.supplierModalVisibile,
+      supplierList: this.props.supplierList,
+      supplierSelect: this.props.supplierSelect,
+      exportInputs: this.props.exportInputs,
+      selectedRowsArr: this.props.selectedRowsArr,
+      pushEasResponse: this.props.pushEasResponse,
+      pushEasModalVisible: this.props.pushEasModalVisible,
+      loading: this.props.loading,
+      queryParams: this.props.queryParams,
+    };
+  }
+  render() {
+    const {
+      dispatch,
+      formCollapse,
+      selectedRowKeysArr,
+      loading,
+      list,
+      total,
+      } = this.props;
+    return (
+      <div className={styles.normal}>
+        <SearchForm
+          dispatch={dispatch}
+          formCollapse={formCollapse}
+        />
+        <DataTable
+          dispatch={dispatch}
+          list={list}
+          loading={loading}
+          selectedRowKeysArr={selectedRowKeysArr}
+          total={total}
+        />
+      </div>
+    );
+  }
+}
+
+CommonInbound.childContextTypes = {
+  allOrg: Proptypes.array,
+  currency: Proptypes.array,
+  allCorporation: Proptypes.array,
+  allPaymentMethod: Proptypes.array,
+  allWarehouse: Proptypes.array,
+  allVoucherStatus: Proptypes.object,
+  exportInputs: Proptypes.object,
+  supplierModalVisibile: Proptypes.bool,
+  supplierList: Proptypes.array,
+  supplierSelect: Proptypes.object,
+  selectedRowsArr: Proptypes.array,
+  pushEasResponse: Proptypes.array,
+  pushEasModalVisible: Proptypes.bool,
+  loading: Proptypes.bool,
+  queryParams: Proptypes.object,
+};
+
+function mapStateToProps({ commonInbound, common }) {
+  return { ...commonInbound, ...common };
+}
+
+export default connect(mapStateToProps)(CommonInbound);

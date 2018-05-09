@@ -1,0 +1,64 @@
+import * as consts from './const.js';
+
+const menuData = [
+  {
+    name: '采购订单',
+    icon: 'copy',
+    path: `${consts.routePrefix}purchaseOrders`,
+    key: 'purchaseOrders',
+  },
+  {
+    name: '采购入库',
+    icon: 'code-o',
+    path: '',
+    key: '',
+    children: [
+      {
+        name: '普通入库',
+        icon: ' ',
+        parentName: '采购入库',
+        path: `${consts.routePrefix}commonInbound`,
+        key: 'commonInbound',
+      },
+      {
+        name: '采购退货',
+        icon: '',
+        path: `${consts.routePrefix}purchaseReturn`,
+        parentName: '采购入库',
+        key: 'purchaseReturn',
+      },
+    ],
+  },
+  {
+    name: '付款单',
+    icon: 'pay-circle-o',
+    key: 'paymentOrders',
+    children: [{
+      name: '采购预付',
+      icon: ' ',
+      parentName: '付款单',
+      path: `${consts.routePrefix}purchaseAdvance`,
+      key: 'purchaseAdvance',
+    }, {
+      name: '采购付款',
+      icon: '',
+      path: `${consts.routePrefix}purchasePayment`,
+      parentName: '付款单',
+      key: 'purchasePayment',
+    }, {
+      name: '采购退款',
+      icon: '',
+      path: `${consts.routePrefix}purchaseRefunds`,
+      parentName: '付款单',
+      key: 'purchaseRefunds',
+    }],
+  },
+  {
+    name: '取消订单',
+    icon: 'book',
+    path: `${consts.routePrefix}cancleOrders`,
+    key: 'cancleOrders',
+  },
+];
+
+export default menuData;

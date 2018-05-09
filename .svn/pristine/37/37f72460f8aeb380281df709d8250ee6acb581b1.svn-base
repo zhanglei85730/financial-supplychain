@@ -1,0 +1,17 @@
+import React from 'react';
+import { connect } from 'dva';
+import styles from './FBATransferSum.css';
+
+function FBATransferSum() {
+  return (
+    <div className={styles.normal}>
+      Route Component: FBATransferSum
+    </div>
+  );
+}
+
+function mapStateToProps() {
+  return {};
+}
+
+export default connect(mapStateToProps)(FBATransferSum);

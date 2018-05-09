@@ -1,0 +1,125 @@
+import React from 'react';
+import { connect } from 'dva';
+import Proptypes from 'prop-types';
+import SearchForm from './SearchForm.js';
+import DataTable from './DataTable.js';
+// import styles from './PurchaseOrders.css';
+
+class FBATransferAccount extends React.Component {
+  getChildContext() {
+    return {
+      // allOrg: this.props.allOrg,
+      // currency: this.props.currency,
+      // allCorporation: this.props.allCorporation,
+      // allPaymentMethod: this.props.allPaymentMethod,
+      // allVoucherStatus: this.props.allVoucherStatus,
+      // pushEasModalVisible: this.props.pushEasModalVisible,
+      // uuid: this.props.uuid,
+      selectedRowsArr: this.props.selectedRowsArr,
+      // pushEasResponse: this.props.pushEasResponse,
+      exportInputs: this.props.exportInputs,
+      supplierModalVisibile: this.props.supplierModalVisibile,
+      supplierList: this.props.supplierList,
+      supplierSelect: this.props.supplierSelect,
+      // tableDataSum: this.props.tableDataSum,
+      // loading: this.props.loading,
+      // supplierTotal: this.props.supplierTotal,
+      // queryParams: this.props.queryParams,
+      supplierTableLoading: this.props.supplierTableLoading,
+      // globalPagationParam: this.props.globalPagationParam,
+    };
+  }
+  render() {
+    const {
+      dispatch,
+      formCollapse,
+      selectedRowKeysArr,
+      loading,
+      list,
+      total,
+      currency,
+      allCorporation,
+      allPaymentMethod,
+      allVoucherStatus,
+      supplierList,
+      supplierModalVisibile,
+      allOrg,
+      queryParams,
+      } = this.props;
+    // SearchForm props
+    const searchFormProps = {
+      dispatch,
+      formCollapse,
+      allOrg,
+      currency,
+      allCorporation,
+      allPaymentMethod,
+      allVoucherStatus,
+      supplierList,
+      supplierModalVisibile,
+    };
+    return (
+      <div>
+        <SearchForm
+          {...searchFormProps}
+        />
+        <DataTable
+          dispatch={dispatch}
+          list={list}
+          loading={loading}
+          selectedRowKeysArr={selectedRowKeysArr}
+          total={total}
+          queryParams={queryParams}
+        />
+      </div>
+    );
+  }
+}
+
+FBATransferAccount.childContextTypes = {
+  // allOrg: Proptypes.array,
+  // currency: Proptypes.array,
+  // allCorporation: Proptypes.array,
+  // allPaymentMethod: Proptypes.array,
+  // allVoucherStatus: Proptypes.object,
+  // pushEasModalVisible: Proptypes.bool,
+  // uuid: Proptypes.string,
+  selectedRowsArr: Proptypes.array,
+  // pushEasResponse: Proptypes.array,
+  exportInputs: Proptypes.object,
+  supplierModalVisibile: Proptypes.bool,
+  supplierList: Proptypes.object,
+  supplierSelect: Proptypes.object,
+  // tableDataSum: Proptypes.object,
+  // loading: Proptypes.bool,
+  // supplierTotal: Proptypes.number,
+  // queryParams: Proptypes.object,
+  supplierTableLoading: Proptypes.bool,
+  // globalPagationParam: Proptypes.object,
+};
+FBATransferAccount.Proptypes = {
+  allOrg: Proptypes.array,
+  currency: Proptypes.array,
+  allCorporation: Proptypes.array,
+  allPaymentMethod: Proptypes.array,
+  allVoucherStatus: Proptypes.object,
+  pushEasModalVisible: Proptypes.bool,
+  uuid: Proptypes.string,
+  selectedRowsArr: Proptypes.array,
+  pushEasResponse: Proptypes.array,
+  exportInputs: Proptypes.object,
+  supplierModalVisibile: Proptypes.bool,
+  supplierList: Proptypes.object,
+  supplierSelect: Proptypes.object,
+  tableDataSum: Proptypes.object,
+  loading: Proptypes.bool,
+  supplierTotal: Proptypes.number,
+  queryParams: Proptypes.object,
+  supplierTableLoading: Proptypes.bool,
+  globalPagationParam: Proptypes.object,
+};
+function mapStateToProps({ fbaTransferAccount, common }) {
+  return { ...fbaTransferAccount, ...common };
+}
+export default connect(mapStateToProps)(FBATransferAccount);
+

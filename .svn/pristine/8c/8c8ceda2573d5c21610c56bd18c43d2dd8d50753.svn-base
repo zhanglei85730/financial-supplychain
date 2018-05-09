@@ -1,0 +1,8 @@
+
+.normal {   
+    float:left;
+    margin-left:10px
+}
+.marginSpace{
+    margin-right:14px;
+}

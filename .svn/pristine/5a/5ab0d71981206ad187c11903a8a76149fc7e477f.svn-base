@@ -1,0 +1,53 @@
+import React from 'react';
+import { Button } from 'antd';
+import PropTypes from 'prop-types';
+import styles from './GlobalExportForm.css';
+import { formParamsFormater, deleteJsonEmptyProps } from '../../utils/util.js';
+
+function GlobalExportForm({
+  form,
+  url,
+  dispatch,
+  reduceName,
+  exportInputs,
+  buttonType,
+  style,
+}) {
+  if (exportInputs) {
+    exportInputs = exportInputs || {};
+  }
+  const handleSubmit = (e) => {
+    const eventKeyId = e.target.id;
+    if (eventKeyId === 'export') {
+      form.validateFields((err, fieldsValue) => {
+        let queryDate = {};
+        const formparams = deleteJsonEmptyProps(fieldsValue);
+        if (fieldsValue.hasOwnProperty('queryDate') && fieldsValue.queryDate && fieldsValue.queryDate.length > 1) {
+          queryDate = `${fieldsValue.queryDate[0].format(`YYYY-MM-DD 00:00:00`)},${fieldsValue.queryDate[1].format('YYYY-MM-DD 23:59:59')}`;
+          Object.assign(formparams, { queryDate });
+        }
+        // 格式化参数      
+        dispatch({ type: reduceName, payload: formParamsFormater(fieldsValue) });
+      });
+    }
+  };
+  return (
+    <div className={styles.normal}>
+      <form action={url} method="get" onClick={handleSubmit}>
+        {
+          Object.keys(exportInputs).map((name, index) => {
+            const values = Object.values(exportInputs);
+            return (<input name={name} value={values[index]} type='hidden' key={index} />);
+          })
+        }
+        <Button htmlType="submit" id="export" style={style} className={styles.marginSpace} type={buttonType}>导出</Button>
+      </form>
+    </div>
+  );
+}
+GlobalExportForm.propTypes = {
+  url: PropTypes.string,
+  reduceName: PropTypes.string,
+  exportInputs: PropTypes.object,
+};
+export default GlobalExportForm;

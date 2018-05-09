@@ -1,0 +1,79 @@
+import React from 'react';
+import { connect } from 'dva';
+import Proptypes from 'prop-types';
+import SearchForm from './SearchForm.js';
+import DataTable from './DataTable.js';
+
+class Freight extends React.Component {
+  getChildContext() {
+    return {
+      allOrg: this.props.allOrg,
+      currency: this.props.currency,
+      allCorporation: this.props.allCorporation,
+      allPaymentMethod: this.props.allPaymentMethod,
+      allVoucherStatus: this.props.allVoucherStatus,
+      pushEasModalVisible: this.props.pushEasModalVisible,
+      uuid: this.props.uuid,
+      selectedRowsArr: this.props.selectedRowsArr,
+      pushEasResponse: this.props.pushEasResponse,
+      exportInputs: this.props.exportInputs,
+      supplierModalVisibile: this.props.supplierModalVisibile,
+      supplierList: this.props.supplierList,
+      supplierSelect: this.props.supplierSelect,
+      cancelBillType: this.props.cancelBillType,
+      loading: this.props.loading,
+      queryParams: this.props.queryParams,
+      globalPagationParam: this.props.globalPagationParam,
+    };
+  }
+  render() {
+    const {
+      dispatch,
+      formCollapse,
+      selectedRowKeysArr,
+      loading,
+      list,
+      total,
+      } = this.props;
+    return (
+      <div>
+        <SearchForm
+          dispatch={dispatch}
+          formCollapse={formCollapse}
+        />
+        <DataTable
+          dispatch={dispatch}
+          list={list}
+          loading={loading}
+          selectedRowKeysArr={selectedRowKeysArr}
+          total={total}
+        />
+      </div>
+    );
+  }
+}
+
+Freight.childContextTypes = {
+  allOrg: Proptypes.array,
+  currency: Proptypes.array,
+  allCorporation: Proptypes.array,
+  allPaymentMethod: Proptypes.array,
+  allVoucherStatus: Proptypes.object,
+  pushEasModalVisible: Proptypes.bool,
+  uuid: Proptypes.string,
+  selectedRowsArr: Proptypes.array,
+  pushEasResponse: Proptypes.array,
+  exportInputs: Proptypes.object,
+  supplierModalVisibile: Proptypes.bool,
+  supplierList: Proptypes.object,
+  supplierSelect: Proptypes.object,
+  cancelBillType: Proptypes.object,
+  loading: Proptypes.bool,
+  queryParams: Proptypes.object,
+  globalPagationParam: Proptypes.object,
+};
+
+function mapStateToProps({ freight, common }) {
+  return { ...freight, ...common };
+}
+export default connect(mapStateToProps)(Freight);

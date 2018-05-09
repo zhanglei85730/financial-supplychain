@@ -1,0 +1,154 @@
+import React from 'react';
+import { Table, Alert } from 'antd';
+import { connect } from 'dva';
+import PropTypes from 'prop-types';
+import consts from '../../config/const.js';
+import { changePagination, decimalTo4, decimalTo2, taxRateFormater } from '../../utils/util.js';
+import packageConst from './packageConst.js';
+
+function DataTable({
+  dispatch,
+  list,
+  loading,
+  selectedRowKeysArr,
+  total,
+  queryParams,
+}) {
+  const tdWidth = { width: 80 };
+  const columns = [
+    {
+      title: '法人主体',
+      key: 'corporateName',
+      dataIndex: 'corporateName',
+      width: 160,
+      // fixed: 'left',
+    }, {
+      title: '部门',
+      key: 'deptment',
+      dataIndex: 'deptment',
+      width: 150,
+      // fixed: 'left',
+      render: (value, row, index) => {
+        const obj = {
+          children: value,
+          props: {},
+        };
+        if (row.hasOwnProperty('rowSpan')) {
+          obj.props.rowSpan = row.rowSpan;
+        }
+        return obj;
+      },
+    },
+    {
+      title: '成本中心',
+      key: 'costCenter',
+      dataIndex: 'costCenter',
+      width: 200,
+    }, {
+      title: '销毁日期',
+      key: 'destoryDate',
+      dataIndex: 'destoryDate',
+      width: 250,
+    },
+    {
+      title: '销毁单号',
+      key: 'destroyOrderSn',
+      dataIndex: 'destroyOrderSn',
+      width: 100,
+    }, {
+      title: '站点',
+      key: 'siteName',
+      dataIndex: 'siteName',
+      ...tdWidth,
+    }, {
+      title: '仓库',
+      key: 'warehouseName',
+      dataIndex: 'warehouseName',
+      ...tdWidth,
+      render: decimalTo4,
+    },
+    {
+      title: 'ID',
+      key: 'id',
+      dataIndex: 'id',
+      ...tdWidth,
+    },
+    {
+      title: 'shipmentID',
+      key: 'totalMoney',
+      dataIndex: 'totalMoney',
+      width: 110,
+    },
+    {
+      title: 'FNSKU',
+      key: 'fnsku',
+      dataIndex: 'fnsku',
+      width: 130,
+    }, {
+      title: 'SKU',
+      key: 'amazonSku',
+      dataIndex: 'amazonSku',
+      width: 150,
+    }, {
+      title: 'UPC',
+      key: 'upc',
+      dataIndex: 'upc',
+      width: 110,
+    }, {
+      title: '数量',
+      key: 'TotalTaxMoneyCny',
+      dataIndex: 'totalTaxMoneyCny',
+      width: 130,
+    }];
+
+
+  const onSelectChange = (selectedRowKeys, selectedRows) => {
+    dispatch({ type: `${packageConst.modelNameSapce}/selectedRowKeys`, payload: selectedRowKeys });
+    dispatch({ type: `${packageConst.modelNameSapce}/selectedRows`, payload: selectedRows });
+  };
+  const rowSelection = {
+    selectedRowKeys: selectedRowKeysArr,
+    onChange: onSelectChange,
+    getCheckboxProps: record => ({
+      disabled: record.createDate === '本页合计' || record.createDate === '全部合计',
+      name: record.name,
+    }),
+  };
+  const changePaginationHandle = (page, pageSize) => {
+    changePagination(page, pageSize, dispatch, `${packageConst.modelNameSapce}`, queryParams);
+  };
+  const pageSizeChangeHandle = (current, size) => {
+    // dispatch({ type: `${packageConst.modelNameSapce}/tableData`, payload: { offset: 0, limit: size } });
+    changePagination(current, size, dispatch, `${packageConst.modelNameSapce}`, queryParams);
+  };
+  return (
+    <div>
+      <Alert message={`已选择${selectedRowKeysArr.length}项`} type="info" showIcon style={{ marginTop: '10px' }} />
+      <Table
+        columns={columns}
+        dataSource={list}
+        rowKey="id"
+        rowSelection={rowSelection}
+        loading={loading}
+        className="nestedTable"
+        style={{ marginTop: '20px' }}
+        scroll={Object.assign(consts.globalTableScroll, { x: 3100 })}
+        pagination={{
+          total,
+          defaultPageSize: consts.defaultPageSize,
+          pageSizeOptions: consts.pageSizeOptions,
+          showSizeChanger: true,
+          hideOnSinglePage: false,
+          onChange: changePaginationHandle,
+          onShowSizeChange: pageSizeChangeHandle,
+          showTotal: () => (consts.GlobalShowTotal(total)),
+        }}
+      />
+    </div>
+  );
+}
+DataTable.PropTypes = {
+  queryParams: PropTypes.object,
+};
+export default connect()(DataTable);
+

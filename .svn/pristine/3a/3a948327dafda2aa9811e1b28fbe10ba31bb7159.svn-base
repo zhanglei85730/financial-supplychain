@@ -1,0 +1,8 @@
+
+html, body, :global(#root) {
+  height: 100%;
+}
+.ant-form-item-control-wrapper{
+  flex: 1 1 0%;
+}
+.ant-form-item{display: flex;}

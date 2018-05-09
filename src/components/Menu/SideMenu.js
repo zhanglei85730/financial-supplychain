@@ -1,0 +1,71 @@
+import React from 'react';
+import { connect } from 'dva';
+import { Layout, Menu, Icon } from 'antd';
+import styles from './index.less';
+import NavLink from '../NavLink/NavLink.js';
+import menuData from '../../config/menu.js';
+
+const { Sider } = Layout;
+const SubMenu = Menu.SubMenu;
+const MenuItem = Menu.Item;
+// 递归生成菜单
+function formatterMenu(dataArr) {
+  return (
+    dataArr.map((item) => {
+      return (
+        item.hasOwnProperty('children') ? (
+          <SubMenu
+            key={item.key}
+            title={<span><Icon type={item.icon} /><span>{item.name}</span></span>}
+          >
+            {formatterMenu(item.children)}
+          </SubMenu>
+        ) : (<MenuItem
+          key={item.key}
+        >
+          <NavLink
+            target={item.path}
+            linkText={<span><Icon type={item.icon} /><span>{item.name}</span></span>}
+          />
+        </MenuItem>)
+      );
+    })
+  );
+}
+
+function SideMenu({ collapsed, activeKey, defaultOpenKeys }) {
+  let collapsedWidth = { width: '80px' };
+  if (!collapsed) {
+    collapsedWidth = { width: '200px' };
+  }
+  // dispatch不需要传入
+  return (
+    <Sider trigger={null} collapsible collapsed={collapsed} className={styles.customSideBar} >
+      <div className={styles.sideMenuContainer} style={collapsedWidth}>
+        {collapsed ? <div className={styles.logo} style={collapsedWidth}></div> : <div className={styles.logo}></div>}
+        <Menu
+          theme="dark" mode="inline"
+          className={styles.menu}
+          defaultSelectedKeys={[activeKey]}
+          defaultOpenKeys={[defaultOpenKeys]}
+        >
+          {
+            formatterMenu(menuData)
+          }
+        </ Menu>
+      </div>
+    </Sider>
+  );
+}
+SideMenu.propTypes = {
+};
+const mapStateToProps = ({ sideMenu, common }) => {
+  const { collapsed } = sideMenu;
+  const { activeKey, defaultOpenKeys } = common;
+  return {
+    collapsed,
+    activeKey,
+    defaultOpenKeys,
+  };
+};
+export default connect(mapStateToProps)(SideMenu);

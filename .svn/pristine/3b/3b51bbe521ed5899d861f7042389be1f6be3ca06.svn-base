@@ -1,0 +1,42 @@
+import dva from 'dva';
+// 地址栏有#
+import { browserHistory } from 'dva/router';
+// createHistory(地址栏无#)
+// import createHistory from 'history/createBrowserHistory';
+import './index.css';
+
+const app = dva({
+  // 地址栏无#
+  // history: createHistory(),
+  // 地址栏有#
+  history: browserHistory,
+});
+
+app.model(require('./models/mainLayout'));
+app.model(require("./models/inventoryRecord"));
+app.model(require("./models/destroyReport"));
+app.model(require("./models/amazonInventory"));
+app.model(require('./models/overseasTransferVerification'));
+app.model(require('./models/overseasTransferDetail'));
+app.model(require('./models/fbaTransferVerification'));
+app.model(require('./models/fabTransferSum'));
+app.model(require('./models/fbaTransferAccount'));
+app.model(require('./models/cancleOrders'));
+app.model(require('./models/purchaseOrders'));
+app.model(require('./models/purchaseAdvance'));
+app.model(require('./models/purchaseRefunds'));
+app.model(require('./models/purchaseReturn'));
+app.model(require('./models/commonInbound'));
+app.model(require('./models/sideMenu'));
+app.model(require('./models/downloadDetail'));
+app.model(require('./models/common.js'));
+app.model(require('./models/globalHeader'));
+app.model(require('./models/login.js'));
+app.model(require('./models/purchasePayment'));
+app.model(require('./models/freight'));
+app.model(require('./models/overpaidVAT'));
+// 4. Router
+app.router(require('./router'));
+// 5. Start
+app.start('#root');
+

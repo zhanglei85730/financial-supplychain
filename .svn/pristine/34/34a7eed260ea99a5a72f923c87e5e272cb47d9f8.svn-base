@@ -1,0 +1,171 @@
+import React from 'react';
+import { connect } from 'dva';
+import PropTypes from 'prop-types';
+import { Table, Alert } from 'antd';
+import packageConst from './packageConst.js';
+import consts from '../../config/const.js';
+import { changePagination, decimalTo4, renderFontColor } from '../../utils/util.js';
+
+function DataTable({ dispatch, list, loading, selectedRowKeysArr, total }, context) {
+  const tdWidth = { width: 80 };
+  const columns = [{
+    title: '单据日期',
+    key: 'billDate',
+    dataIndex: 'billDate',
+    width: 140,
+  }, {
+    title: '采购单号',
+    key: 'purchaseOrderId',
+    dataIndex: 'purchaseOrderId',
+    width: 120,
+  }, {
+    title: '退货单号',
+    dataIndex: 'refundOrderId',
+    key: 'refundOrderId',
+    width: 120,
+  }, {
+    title: '单据类型',
+    dataIndex: 'billType',
+    key: 'billType',
+    ...tdWidth,
+    render: () => ('采购退款'),
+  }, {
+    title: '法人主体',
+    dataIndex: 'corporationName',
+    key: 'corporationName',
+    width: 200,
+  }, {
+    title: '供应商',
+    dataIndex: 'supplierName',
+    key: 'supplierName',
+    width: 200,
+  }, {
+    title: '币别',
+    dataIndex: 'currency',
+    key: 'currency',
+    ...tdWidth,
+  }, {
+    title: '汇率',
+    dataIndex: 'exchangeRate',
+    key: 'exchangeRate',
+    ...tdWidth,
+    render: decimalTo4,
+  }, {
+    title: '退款额',
+    dataIndex: 'refundOrderPrice',
+    key: 'refundOrderPrice',
+    ...tdWidth,
+    render: renderFontColor,
+  }, {
+    title: '运费',
+    dataIndex: 'shippingCost',
+    key: 'shippingCost',
+    ...tdWidth,
+    render: renderFontColor,
+  }, {
+    title: '亏损值',
+    dataIndex: 'costGrapPrice',
+    key: 'costGrapPrice',
+    ...tdWidth,
+    render: renderFontColor,
+  }, {
+    title: '退款合计',
+    dataIndex: 'refundAmountTotal',
+    key: 'refundAmountTotal',
+    ...tdWidth,
+    render: renderFontColor,
+  }, {
+    title: '付款方式',
+    dataIndex: 'pamentMenthodType',
+    key: 'paymentMethodType',
+    ...tdWidth,
+    render: consts.purchaseRefundsPayType,
+  }, {
+    title: '付款账户',
+    dataIndex: 'payAccount',
+    key: 'payAccount',
+    ...tdWidth,
+  }, {
+    title: '请款人',
+    dataIndex: 'creatorName',
+    key: 'creatorName',
+    ...tdWidth,
+  }, {
+    title: '事业部',
+    dataIndex: 'orgName',
+    key: 'orgName',
+    width: 150,
+  }, {
+    title: '单据状态',
+    dataIndex: 'voucherStatus',
+    key: 'voucherStatus',
+    ...tdWidth,
+    render: consts.voucherStatusRender,
+  }, {
+    title: '单据号',
+    dataIndex: 'voucherNumber',
+    key: 'voucherNumber',
+    ...tdWidth,
+  }, {
+    title: '推送金蝶时间',
+    dataIndex: 'pushEasDate',
+    key: 'pushEasDate',
+    width: 150,
+  }, {
+    title: '金蝶生成凭证错误描述',
+    dataIndex: 'voucherErrorMessage',
+    key: 'voucherErrorMessage',
+    width: 300,
+  }];
+  const onSelectChange = (selectedRowKeys, selectedRows) => {
+    dispatch({ type: `${packageConst.modelNameSapce}/selectedRowKeys`, payload: selectedRowKeys });
+    dispatch({ type: `${packageConst.modelNameSapce}/selectedRows`, payload: selectedRows });
+  };
+  const rowSelection = {
+    selectedRowKeys: selectedRowKeysArr,
+    onChange: onSelectChange,
+    getCheckboxProps: record => ({
+      // Column configuration not to be checked
+      disabled: record.billDate === '本页合计' || record.billDate === '全部合计',
+      name: record.name,
+    }),
+  };
+  const changePaginationHandle = (page, pageSize) => {
+    changePagination(page, pageSize, dispatch, 'purchaseRefunds', context.queryParams);
+  };
+  const pageSizeChangeHandle = (current, size) => {
+    dispatch({ type: `${packageConst.modelNameSapce}/tableData`, payload: { offset: 0, limit: size } });
+    changePagination(current, size, dispatch, `${packageConst.modelNameSapce}`);
+  };
+  return (
+    <div>
+      <Alert message={`已选择${selectedRowKeysArr.length}项`} type="info" showIcon style={{ marginTop: '10px' }} />
+      <Table
+        columns={columns}
+        dataSource={list}
+        bordered
+        // table必须有key属性，可以将设置id为key
+        rowKey="id"
+        rowSelection={rowSelection}
+        loading={loading}
+        style={{ marginTop: '20px' }}
+        scroll={Object.assign(consts.globalTableScroll, { x: 2800 })}
+        pagination={{
+          total,
+          defaultPageSize: consts.defaultPageSize,
+          pageSizeOptions: consts.pageSizeOptions,
+          showSizeChanger: true,
+          hideOnSinglePage: false,
+          onChange: changePaginationHandle,
+          onShowSizeChange: pageSizeChangeHandle,
+          showTotal: () => (consts.GlobalShowTotal(total)),
+        }}
+      />
+    </div>
+  );
+}
+DataTable.contextTypes = {
+  queryParams: PropTypes.object,
+};
+
+export default DataTable;

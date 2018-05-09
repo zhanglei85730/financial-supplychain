@@ -1,0 +1,36 @@
+import request from '../utils/request';
+import consts from '../config/const.js';
+import * as util from '../utils/util.js';
+import packageConst from '../routes/PurchaseReturn/packageConst.js';
+import { fetchUUID } from './common.js';
+// 加载table数据
+export function fetchTableData(payload) {
+  return util.getSecurityHeaderFormLocal().then((opts) => {
+    const params = util.params(util.deleteJsonEmptyProps(payload));
+    return request(`${consts.domain}/api/getReturnOrderList?${params}`, opts);
+  });
+}
+// table数据总计
+export function getTableDataSum(payload) {
+  return util.getSecurityHeaderFormLocal().then((opts) => {
+    const params = util.params(util.deleteJsonEmptyProps(payload));
+    return request(`${consts.domain}/api/sumPrepaidOrderList?${params}`, opts);
+  });
+}
+// 导出
+export function exportFile(payload) {
+  util.requestWithSecurityHeader((defaultOpts) => {
+    const opts = {
+      method: 'post',
+      body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    const mergeHeaders = { ...defaultOpts.headers, ...opts.headers };
+    Object.assign(defaultOpts, opts);
+    Object.assign(defaultOpts.headers, opts);
+    defaultOpts.headers = mergeHeaders;
+    return request(`${consts.domain}/api/testPost`, defaultOpts);
+  });
+}

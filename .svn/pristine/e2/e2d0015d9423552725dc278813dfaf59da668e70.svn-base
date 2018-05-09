@@ -1,0 +1,79 @@
+import React from 'react';
+import { connect } from 'dva';
+import { Modal, Progress, Icon } from 'antd';
+import packageConst from './packageConst.js';
+import consts from '../../config/const.js';
+
+let currentProgress = 0;
+let allTotal = 0;
+class PushEasModal extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleCancel = this.handleCancel.bind(this);
+    this.handleOk = this.handleOk.bind(this);
+  }
+  handleOk() {
+    this.props.dispatch({ type: `${packageConst.modelNameSapce}/pushEasModalRedece`, payload: !this.props.pushEasModalVisible });
+  }
+  handleCancel() {
+    this.props.dispatch({ type: `${packageConst.modelNameSapce}/pushEasClearResponseRedece`, payload: [] });
+    this.props.dispatch({ type: `${packageConst.modelNameSapce}/pushEasModalRedece`, payload: !this.props.pushEasModalVisible });
+  }
+  render() {
+    const listData = this.props.pushEasResponse;
+    const successColor = { color: '#1890ff' };
+    const failColor = { color: '#f5222d' };
+    const subError = { marginLeft: '20px' };
+    //   // 当前推送 
+    const lastMessage = this.props.pushEasResponse.length > 0 ? this.props.pushEasResponse[this.props.pushEasResponse.length - 1] : {};
+    if (lastMessage.hasOwnProperty('type') && lastMessage.type === 'TOTAL_COUNT') {
+      allTotal = lastMessage.allTotal;
+    }
+    if (lastMessage.hasOwnProperty('total') && lastMessage.total != null) {
+      currentProgress = lastMessage.total / allTotal * 100;
+    }
+    return (
+      <Modal
+        title="推送到金蝶"
+        visible={this.props.pushEasModalVisible}
+        onOk={this.handleOk}
+        onCancel={this.handleCancel}
+        width={600}
+      >
+        <Progress percent={currentProgress} status="active" />
+        <div style={consts.pushEasModalStyle}>
+          {
+            listData.map((item, index) => {
+              const key = index;
+              // 连接服务器成功
+              if (item.hasOwnProperty('type') && item.type === 'CONNECT_SUCCESS' && item.hasOwnProperty('msg') && item.msg != null) {
+                return <div style={successColor} key={key}> <Icon type="check-circle-o" /> {item.msg}</div>;
+              }
+              // 出错，输出msg
+              if (item.hasOwnProperty('type') && item.type === 'TOTAL_PART_COUNT' && item.hasOwnProperty('msg') && item.msg != null) {
+                try {
+                  const msgArr = JSON.parse(item.msg) ? JSON.parse(item.msg) : [];
+                  const rr = msgArr.map((item) => {
+                    return <div style={subError}>{item}</div>;
+                  });
+                  return (
+                    <div style={failColor} key={key}> <Icon type="close-circle-o" /> 当前推送进度：{item.total}条/{allTotal}条{rr}</div>
+                  );
+                } catch (err) {
+                }
+              }
+              if (item.hasOwnProperty('type') && item.type === "SUCCESS") {
+                return <div style={successColor} key={key}> <Icon type="check-circle-o" /> 推送完成</div>;
+              }
+            })
+          }
+        </div>
+      </Modal>
+    );
+  }
+}
+function mapStateToProps({ overpaidVAT }) {
+  const { pushEasModalVisible, pushEasResponse } = overpaidVAT;
+  return { pushEasModalVisible, pushEasResponse };
+}
+export default connect(mapStateToProps)(PushEasModal);

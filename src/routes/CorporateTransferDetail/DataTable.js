@@ -1,0 +1,242 @@
+import React from 'react';
+import { Table, Alert } from 'antd';
+import PropTypes from 'prop-types';
+import packageConst from './packageConst.js';
+import consts from '../../config/const.js';
+import { changePagination, decimalTo4, decimalTo2 } from '../../utils/util.js';
+
+function DataTable({
+  dispatch,
+  list,
+  loading,
+  selectedRowKeysArr,
+  total,
+  queryParams,
+  }) {
+  const tdWidth = { width: 80 };
+  const columns = [{
+    title: '调拨单号',
+    key: 'transferNo',
+    dataIndex: 'transferNo',
+    width: 160,
+  },
+  {
+    title: '报关单号',
+    dataIndex: 'declareOrderId',
+    key: 'declareOrderId',
+    width: 200,
+  },
+  {
+    title: '出库日期',
+    dataIndex: 'outtime',
+    key: 'outtime',
+    width: 200,
+  }, {
+    title: '报关日期',
+    dataIndex: 'transferDate',
+    key: 'transferDate',
+    width: 200,
+  }, {
+    title: '交易期间',
+    dataIndex: 'transferPeriod',
+    key: 'transferPeriod',
+    width: 200,
+  }, {
+    title: '入库法人主体',
+    dataIndex: 'legalNameIn',
+    key: 'legalNameIn',
+    width: 200,
+  }, {
+    title: '出库法人主体',
+    dataIndex: 'legalNameOut',
+    key: 'legalNameOut',
+    width: 240,
+  }, {
+    title: 'shipmentId',
+    dataIndex: 'shipmentId',
+    key: 'shipmentId',
+    width: 200,
+  },
+  {
+    title: 'FNSKU',
+    dataIndex: 'fnsku',
+    key: 'fnsku',
+    width: 160,
+  }, {
+    title: 'UPC',
+    dataIndex: 'upc',
+    key: 'upc',
+    width: 160,
+  },
+  {
+    title: 'SKU',
+    dataIndex: 'sku',
+    key: 'sku',
+    width: 160,
+  },
+  {
+    title: 'SKU名称',
+    dataIndex: 'skuName',
+    key: 'skuName',
+    width: 220,
+  },
+  {
+    title: '总数量',
+    dataIndex: 'totalCount',
+    key: 'totalCount',
+    width: 140,
+  }, {
+    title: '采购金额',
+    dataIndex: 'totalMoney',
+    key: 'totalMoney',
+    width: 140,
+  }, {
+    title: '退税率',
+    dataIndex: 'returnTax',
+    key: 'returnTax',
+    width: 140,
+  }, {
+    title: '税率',
+    dataIndex: 'taxRate',
+    key: 'taxRate',
+    width: 140,
+  }, {
+    title: '报关单号',
+    dataIndex: 'voucherStatus',
+    key: 'voucherStatus',
+    width: 140,
+  }, {
+    title: '报关金额',
+    dataIndex: 'declareMoney',
+    key: 'declareMoney',
+    width: 140,
+  }, {
+    title: '币别',
+    dataIndex: 'currency',
+    key: 'currency',
+    width: 140,
+  }, {
+    title: '汇率',
+    dataIndex: 'exchangeRate',
+    key: 'exchangeRate',
+    width: 170,
+  }, {
+    title: '项号',
+    dataIndex: 'num',
+    key: 'num',
+    width: 150,
+  }, {
+    title: '销售收入',
+    dataIndex: 'totalSalesAmount',
+    key: 'totalSalesAmount',
+    width: 150,
+  }, {
+    title: '销售成本',
+    dataIndex: 'salesCost',
+    key: 'salesCost',
+    width: 170,
+  }, {
+    title: '应收出口退税',
+    dataIndex: 'exportRebatesAmountCny',
+    key: 'exportRebatesAmountCny',
+    width: 170,
+  }, {
+    title: '进项税转出',
+    dataIndex: 'transferOutVatAmountCny',
+    key: 'transferOutVatAmountCny',
+    width: 150,
+  }, {
+    title: '出库仓',
+    dataIndex: 'outWarehouseName',
+    key: 'outWarehouseName',
+    width: 150,
+  }, {
+    title: '在途仓',
+    dataIndex: 'passWarehouseName',
+    key: 'passWarehouseName',
+    width: 170,
+  }, {
+    title: '入库仓',
+    dataIndex: 'intWarehouseName',
+    key: 'intWarehouseName',
+    width: 150,
+  }, {
+    title: '大区',
+    dataIndex: 'area',
+    key: 'area',
+    width: 170,
+  }, {
+    title: '店铺',
+    dataIndex: 'accountName',
+    key: 'accountName',
+    width: 150,
+  }, {
+    title: '事业部',
+    dataIndex: 'enterprise',
+    key: 'enterprise',
+    width: 170,
+  }, {
+    title: '状态',
+    dataIndex: 'status',
+    key: 'status',
+    width: 150,
+  }, {
+    title: '错误类型',
+    dataIndex: 'errorMsg',
+    key: 'errorMsg',
+    width: 170,
+  }];
+
+  const onSelectChange = (selectedRowKeys, selectedRows) => {
+    dispatch({ type: `${packageConst.modelNameSapce}/selectedRowKeys`, payload: selectedRowKeys });
+    dispatch({ type: `${packageConst.modelNameSapce}/selectedRows`, payload: selectedRows });
+  };
+  const rowSelection = {
+    selectedRowKeys: selectedRowKeysArr,
+    onChange: onSelectChange,
+    getCheckboxProps: record => ({
+      disabled: record.billDate === '本页合计' || record.billDate === '全部合计',
+      name: record.name,
+    }),
+  };
+  const changePaginationHandle = (page, pageSize) => {
+    changePagination(page, pageSize, dispatch, `${packageConst.modelNameSapce}`, queryParams);
+  };
+  const pageSizeChangeHandle = (current, size) => {
+    // dispatch({ type: `${packageConst.modelNameSapce}/tableData`, payload: { offset: 0, limit: size } });
+    changePagination(current, size, dispatch, `${packageConst.modelNameSapce}`);
+  };
+  return (
+    <div>
+      <Alert message={`已选择${selectedRowKeysArr.length}项`} type="info" showIcon style={{ marginTop: '10px' }} />
+      <Table
+        columns={columns}
+        dataSource={list}
+        className="nestedTable"
+        // bordered
+        // table必须有key属性，可以将设置id为key
+        rowKey="id"
+        rowSelection={rowSelection}
+        loading={loading}
+        style={{ marginTop: '20px' }}
+        scroll={Object.assign(consts.globalTableScroll, { x: 4500 })}
+        pagination={{
+          total,
+          defaultPageSize: consts.defaultPageSize,
+          pageSizeOptions: consts.pageSizeOptions,
+          showSizeChanger: true,
+          hideOnSinglePage: false,
+          onChange: changePaginationHandle,
+          onShowSizeChange: pageSizeChangeHandle,
+          showTotal: () => (consts.GlobalShowTotal(total)),
+        }}
+
+      />
+    </div>
+  );
+}
+DataTable.propTypes = {
+  queryParams: PropTypes.object,
+};
+
+export default DataTable;

@@ -1,0 +1,44 @@
+import React from 'react';
+import { Button, Form } from 'antd';
+import PropTypes from 'prop-types';
+import styles from './PurchaseOrders.css';
+import CollapseBtn from '../../components/CollapseBtn/CollapseBtn.js';
+import consts from '../../config/const.js';
+import * as util from '../../utils/util.js';
+
+function FormButtons({ dispatch, form, formCollapse }) {
+  // form提交事件
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    form.validateFields((err, fieldsValue) => {      
+      const formparams = util.deleteJsonEmptyProps(fieldsValue);
+      dispatch({ type: 'purchaseOrders/tableData', payload: Object.assign(formparams, consts.initPagination) });
+    });
+  };
+  // 重置
+  const restHandle = () => {
+    form.resetFields();
+  };
+  return (
+    <Form.Item>
+      <span className={styles.searchFormBtns}>
+        <Button type="primary" htmlType="submit" key="query" onClick={handleSubmit}>查询</Button>
+        <Button onClick={restHandle} key="reset">重置</Button>
+        <CollapseBtn
+          action="purchaseOrders/formCollapseReduce"
+          dispatch={dispatch}
+          formCollapse={formCollapse}
+        />
+      </span>
+    </Form.Item >
+  );
+}
+// props 检查
+FormButtons.propsType = {
+  dispatch: PropTypes.func.required,
+  action: PropTypes.string.required,
+  formCollapse: PropTypes.bool.required,
+  form: PropTypes.object.required,
+};
+FormButtons.contextTypes = { color: PropTypes.string };
+export default FormButtons;

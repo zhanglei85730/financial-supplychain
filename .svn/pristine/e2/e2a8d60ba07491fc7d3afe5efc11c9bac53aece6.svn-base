@@ -1,0 +1,31 @@
+import React from 'react';
+import { Table } from 'antd';
+
+function NestedTable(rowData) {
+  const { items } = rowData;
+  const columns = [
+    { title: '采购单号', dataIndex: 'relateOrderId', key: 'relateOrderId' },
+    { title: 'SKU', dataIndex: 'skuCode', key: 'skuCode' },
+    { title: 'SKU名称', dataIndex: 'skuName', key: 'skuName' },
+    { title: '币别', dataIndex: 'currency', key: 'currency' },
+    { title: '汇率', dataIndex: 'exchangeRate', key: 'exchangeRate' },
+    { title: '货款金额', dataIndex: 'receiMoney', key: 'receiMoney' },
+    { title: '折扣', dataIndex: 'discountAmtItem', key: 'discountAmtItem' },
+    { title: '运费', dataIndex: 'shippingCost', key: 'shippingCost' },
+    { title: '留抵', dataIndex: 'reduceDebt', key: 'reduceDebt' },
+    { title: '应付金额', dataIndex: 'payMoney', key: 'payMoney' },
+    { title: '实付金额', dataIndex: 'paidMoney', key: 'paidMoney' },
+    { title: '实付金额（本位币）', dataIndex: 'paidMoneyCny', key: 'paidMoneyCny' },
+  ];
+  return (
+    <div>
+      <Table
+        rowKey='id'
+        columns={columns}
+        dataSource={items}
+        pagination={false}
+      />
+    </div>
+  );
+}
+export default NestedTable;

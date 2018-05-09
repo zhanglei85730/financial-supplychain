@@ -1,0 +1,78 @@
+import React from 'react';
+import { Modal, Table, Input } from 'antd';
+import PropTypes from 'prop-types';
+import styles from './AllSupplier.css';
+
+const { Search } = Input;
+
+function AllSupplier({ isVisibile, dispatch, dataSource }, context) {
+  const columns = [{
+    title: '供应商',
+    dataIndex: 'fnameL2',
+    key: 'fnameL2',
+  }, {
+    title: '时间',
+    dataIndex: 'flastupdatetime',
+    key: 'flastupdatetime',
+  }];
+  const handleOk = () => {
+    dispatch({ type: 'common/supplierModalVisibileReduce', payload: false });
+  };
+
+  const handleCancel = () => {
+    dispatch({ type: 'common/supplierModalVisibileReduce', payload: false });
+  };
+  const rowSelection = {
+    type: 'radio',
+    onChange: (selectedRowKeys, selectedRows) => {
+      dispatch({ type: 'common/supplierSelect', payload: selectedRows[0] });
+    },
+    getCheckboxProps: record => ({
+      disabled: record.name === 'Disabled User', // Column configuration not to be checked
+      name: record.name,
+    }),
+  };
+  // 搜索事件
+  const serachHandle = (value) => {
+    if (value) {
+      dispatch({ type: 'common/getAllSupplier', payload: value });
+    }
+  };
+  const searchStyle = { marginBottom: '20px' };
+  return (
+    <div className={styles.normal}>
+      <Modal
+        title="选择供应商"
+        visible={isVisibile}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        width={800}
+      >
+        <Search
+          placeholder="input search text"
+          enterButton="搜索" size="default"
+          style={searchStyle}
+          onSearch={serachHandle}
+        />
+        <Table
+          dataSource={dataSource}
+          columns={columns}
+          rowSelection={rowSelection}
+          bordered
+        // pagination={{
+        //   total: context.supplierTotal,
+        //   defaultPageSize: 10,
+        //   pageSizeOptions: 10,
+        //   hideOnSinglePage: true,
+        //   // onChange: changePaginationHandle,
+        //   // showTotal: () => (consts.GlobalShowTotal(total)),
+        // }}
+        />
+      </Modal>
+    </div>
+  );
+}
+AllSupplier.contextTypes = {
+  supplierSearchList: PropTypes.array,
+};
+export default AllSupplier;

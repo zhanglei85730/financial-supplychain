@@ -1,0 +1,143 @@
+import * as service from '../services/agreementManage.js';
+import * as util from '../utils/util.js';
+import { message } from 'antd';
+
+export default {
+  namespace: 'agreementManage',
+  state: {
+    list: [],
+    loading: true,
+    selectedRowKeysArr: [],
+    selectedRowsArr: [],
+    addModalHide: false,
+    modifyModalHide: false,
+    // 流水号
+    singleNum: 'fewf',
+  },
+  reducers: {
+    // 显示、隐藏新增modal
+    addModalShow(state, { payload }) {
+      return { ...state, addModalHide: payload };
+    },
+    // 显示、隐藏修改modal
+    modifyModalShow(state, { payload }) {
+      return { ...state, modifyModalHide: payload };
+    },
+    // 初始化加载数据
+    query(state, { payload }) {
+      return { ...state, list: payload, loading: false };
+    },
+    // 选择的数据行数
+    selectedRowKeys(state, { payload }) {
+      return { ...state, selectedRowKeysArr: payload };
+    },
+    // 选择的数据行
+    selectedRows(state, { payload }) {
+      return { ...state, selectedRowsArr: payload };
+    },
+    // 删除
+    remove(state, { payload }) {
+      return { ...state, selectedRowsArr: payload };
+    },
+    // 删除失败提示
+    messageReduce(state, { payload }) {
+      return { ...state, ...payload };
+    },
+    // 获取流水号
+    singleNumReduce(state, { payload }) {
+      return { ...state, singleNum: payload };
+    },
+  },
+  effects: {
+    // playload:{}这里可以传入参数 用于异步请求
+    *tableData({ payload }, { call, put }) {
+      // 返回的异步数据以{data:[]}这样的形式,下面将结果解构赋值
+      // const isLogin = yield select(state => state.table01);
+      // console.log('logincheck',isLogin);
+      const { data } = yield call(service.fetchTableData);
+      yield put({
+        type: 'query',
+        payload: data.data.page,
+      });
+    },
+    *tableDataById({ payload: { values } }, { call, put }) {
+      // 返回的异步数据以{data:[]}这样的形式,下面将结果解构赋值
+      const { data } = yield call(service.fetchTableDataById, values);
+      yield put({
+        type: 'query',
+        payload: { data },
+      });
+    },
+    // 搜索
+    *search({ payload }, { call, put }) {
+      const { data } = yield call(service.search, payload);
+      yield put({
+        type: 'query',
+        payload: { data },
+      });
+    },
+    // 删除
+    *remove({ payload }, { call, put }) {
+      const { data } = yield call(service.remove, payload);
+
+      // 删除失败
+      if (util.hasProperty(data, 'succeed') && !data.succeed) {
+        message.error(data.message);
+        return false;
+      }
+      message.success(data.message);
+      // 删除成功刷新table
+      yield put({ type: 'tableData' });
+    },
+    // 增加
+    *add({ payload }, { call, put }) {
+      const { data } = yield call(service.add, payload);
+      const { succeed } = data;
+      if (succeed) {
+        message.success(data.message);
+        // 刷新table
+        yield put({ type: 'tableData' });
+        // 隐藏新增modal
+        yield put({ type: 'addModalShow', payload: false });
+      } else {
+        message.error(data.message);
+      }
+    },
+    // 修改
+    *modify({ payload }, { call, put }) {
+      const { data } = yield call(service.modify, payload);
+      if (util.hasProperty(data, 'succeed') && data.succeed) {
+        // 刷新table
+        yield put({ type: 'tableData' });
+        message.success(data.message);
+        // 隐藏新增modal
+        yield put({ type: 'modifyModalShow', payload: false });
+      } else {
+        message.error(data.message);
+      }
+    },
+    *getSingleNum({ payload }, { call, put }) {
+      const { data } = yield call(service.getSingleNum, payload);
+      yield put({
+        type: 'singleNumReduce',
+        payload: data.data.singleNum,
+      });
+    },
+  },
+  // 获取流水号
+  subscriptions: {
+    setup({ dispatch, history }) {
+      // query必须传入
+      return history.listen(({ pathname, query }) => {
+        if (pathname === '/AgreementManage' || pathname === '/') {
+          // type:'tableData' 指异步的action
+          dispatch({ type: 'tableData', payload: query });
+          const username = window.sessionStorage.getItem('username');
+          if (username) {
+            dispatch({ type: 'globalHeader/usernameChange', payload: username });
+          }
+        }
+      });
+    },
+  },
+};

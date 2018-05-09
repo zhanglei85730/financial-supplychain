@@ -1,0 +1,81 @@
+import request from '../utils/request';
+import consts from '../config/const.js';
+import * as util from '../utils/util.js';
+// 加载table数据
+export function fetchTableData() {
+  const searchObj = util.getSearchParams();
+  // const token = 'qy018cd4921e019d0028c179ae32';
+  if (Object.keys(searchObj).indexOf('code') >= 0) {
+    const opts = {
+      headers: {
+        'security-header': searchObj.code,
+      },
+    };
+    // 存储到sessionStorage
+    window.sessionStorage.setItem('code', searchObj.code);
+    if (Object.keys(searchObj).indexOf('username') >= 0) {
+      window.sessionStorage.setItem('username', searchObj.username);
+    }
+    return request(`${consts.domain}/reset/contract/getContract`, opts);
+  }
+}
+// 删除
+export function remove(payload) {
+  const loginInfo = util.getLoginInfo();
+  // 无token直接退出
+  if (!loginInfo) return;
+  const formData = new FormData();
+  formData.append('contractIds', payload);
+  const opts = {
+    method: 'post',
+    body: formData,
+    headers: {
+      'security-header': loginInfo.token,
+    },
+  };
+  return request(`${consts.domain}/reset/contract/deleteContractByIds`, opts);
+}
+// 获取合同流水号
+export function getSingleNum() {
+  const loginInfo = util.getLoginInfo();
+  // 无token直接退出
+  if (!loginInfo) return;
+  const opts = {
+    method: 'get',
+    headers: {
+      'security-header': loginInfo.token,
+      'Content-Type': 'application/json',
+    },
+  };
+  return request(`${consts.domain}/reset/contract/getSingleNum`, opts);
+}
+// 新增
+export function add(payload) {
+  const loginInfo = util.getLoginInfo();
+  // 无token直接退出
+  if (!loginInfo) return;
+  const opts = {
+    method: 'post',
+    body: JSON.stringify(payload),
+    headers: {
+      'security-header': loginInfo.token,
+      'Content-Type': 'application/json',
+    },
+  };
+  return request(`${consts.domain}/reset/contract/addContract`, opts);
+}
+// 修改
+export function modify(payload) {
+  const loginInfo = util.getLoginInfo();
+  // 无token直接退出
+  if (!loginInfo) return;
+  const opts = {
+    method: 'post',
+    body: JSON.stringify(payload),
+    headers: {
+      'security-header': loginInfo.token,
+      'Content-Type': 'application/json',
+    },
+  };
+  return request(`${consts.domain}/reset/contract/editContract`, opts);
+}

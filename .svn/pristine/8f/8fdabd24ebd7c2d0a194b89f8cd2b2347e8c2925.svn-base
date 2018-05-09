@@ -1,0 +1,17 @@
+import React from 'react';
+import { connect } from 'dva';
+// import styles from './style.css';
+
+function PurchaseOrderInbound() {
+  return (
+    <div>
+      Route Component: PurchaseOrderInbound/PurchaseOrderInbound
+    </div>
+  );
+}
+
+function mapStateToProps() {
+  return {};
+}
+
+export default connect(mapStateToProps)(PurchaseOrderInbound);

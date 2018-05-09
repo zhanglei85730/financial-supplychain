@@ -1,0 +1,32 @@
+export default {
+  // 正式部署地址
+  domain: 'http://financial-supplychain.aukeyit.com',
+  // domain: 'http://192.168.25.236:9102', // 谢
+  // 本地开发websocket
+  // wsUrl: 'ws://192.168.25.236:9102',
+  routePrefix: '/',
+  // 正式websocket
+  wsUrl: 'ws://10.1.1.204:8091',
+  // 测试websocket
+  //10.1.1.204:8091
+  // domain: 'http://localhost:8000',
+  // 本地测试
+  // http://www.aukeyit.com/login
+  // domain: 'http://192.168.25.56:8010',
+  tableScrollY: 860,
+  //服务端返回的table分页条数
+  limit: 10,
+  // 返回pageSize额外条数 用于求和行
+  extraPageSize: 2,
+  defaultPageSize: 16,
+  pageSizeOptions: ['16', '20', '30', '40'],
+  // 登录地址
+  loginUrl: 'http://www.aukeyit.com/login?error',
+  // search form config
+  // 单据日期
+  createDate: {
+    title: '单据日期',
+    key: 'createDate',
+    dataIndex: 'createDate',
+  },
+}

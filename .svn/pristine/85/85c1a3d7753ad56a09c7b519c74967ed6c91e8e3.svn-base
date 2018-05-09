@@ -1,0 +1,93 @@
+import * as consts from './const.js';
+
+const menuData = [
+  {
+    name: '采购订单',
+    icon: 'copy',
+    path: `${consts.routePrefix}purchaseOrders`,
+    key: 'purchaseOrders',
+  },
+  {
+    name: '采购入库',
+    icon: 'code-o',
+    path: '',
+    key: 'purchaseIn',
+    children: [
+      {
+        name: '普通入库',
+        icon: ' ',
+        parentKey: 'purchaseIn',
+        parentName: '采购入库',
+        path: `${consts.routePrefix}commonInbound`,
+        key: 'commonInbound',
+      },
+      {
+        name: '采购退货',
+        icon: '',
+        path: `${consts.routePrefix}purchaseReturn`,
+        parentKey: 'purchaseIn',
+        parentName: '采购入库',
+        key: 'purchaseReturn',
+      },
+    ],
+  },
+  {
+    name: '付款单',
+    icon: 'pay-circle-o',
+    key: 'paymentOrders',
+    children: [{
+      name: '采购预付',
+      icon: ' ',
+      parentName: '付款单',
+      parentKey: 'paymentOrders',
+      path: `${consts.routePrefix}purchaseAdvance`,
+      key: 'purchaseAdvance',
+    }, {
+      name: '采购付款',
+      icon: '',
+      path: `${consts.routePrefix}purchasePayment`,
+      parentKey: 'paymentOrders',
+      parentName: '付款单',
+      key: 'purchasePayment',
+    }, {
+      name: '采购退款',
+      icon: '',
+      path: `${consts.routePrefix}purchaseRefunds`,
+      parentKey: 'paymentOrders',
+      parentName: '付款单',
+      key: 'purchaseRefunds',
+    }],
+  },
+  {
+    name: '取消订单',
+    icon: 'book',
+    path: `${consts.routePrefix}cancleOrders`,
+    key: 'cancleOrders',
+  },
+  {
+    name: '其他费用',
+    icon: 'table',
+    path: '',
+    key: 'otherCost',
+    children: [
+      {
+        name: '运费',
+        icon: ' ',
+        parentKey: 'otherCost',
+        parentName: '其他费用',
+        path: `${consts.routePrefix}freight`,
+        key: 'freight',
+      },
+      {
+        name: '留抵',
+        icon: ' ',
+        parentKey: 'otherCost',
+        parentName: '其他费用',
+        path: `${consts.routePrefix}overpaidVAT`,
+        key: 'overpaidVAT',
+      },
+    ],
+  },
+];
+
+export default menuData;

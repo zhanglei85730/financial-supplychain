@@ -1,0 +1,17 @@
+import React from 'react';
+import { connect } from 'dva';
+import styles from './SalesOutbound.css';
+
+function SalesOutbound() {
+  return (
+    <div className={styles.normal}>
+      Route Component: TransferReceipt/TransferReceipt
+    </div>
+  );
+}
+
+function mapStateToProps() {
+  return {};
+}
+
+export default connect(mapStateToProps)(SalesOutbound);

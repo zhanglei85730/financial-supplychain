@@ -1,0 +1,58 @@
+import React from 'react';
+import { Button } from 'antd';
+import PropTypes from 'prop-types';
+import styles from './GlobalExportForm.css';
+import * as util from '../../utils/util.js';
+
+function GlobalExportForm({
+  form,
+  url,
+  dispatch,
+  reduceName,
+  exportInputs,
+}) {
+  if (exportInputs) {
+    exportInputs = exportInputs || {};
+  }
+  const handleSubmit = (e) => {
+    const eventKeyId = e.target.id;
+    if (eventKeyId === 'export') {
+      form.validateFields((err, fieldsValue) => {
+        let queryDate = {};
+        const formparams = util.deleteJsonEmptyProps(fieldsValue);
+        if (fieldsValue.hasOwnProperty('queryDate') && fieldsValue.queryDate && fieldsValue.queryDate.length > 1) {
+          queryDate = `${fieldsValue.queryDate[0].format(`YYYY-MM-DD 00:00:00`)},${fieldsValue.queryDate[1].format('YYYY-MM-DD 23:59:59')}`;
+          Object.assign(formparams, { queryDate });
+        }
+        dispatch({ type: reduceName, payload: formparams });
+      });
+    }
+    if (eventKeyId === 'pusEas') {
+      form.validateFields((err, fieldsValue) => {
+        // const formparams = util.deleteJsonEmptyProps(fieldsValue);
+        // dispatch({ type: 'pureventKeyId === 'export 'chaseOrders/exportInputsReduce', payload: formparams });
+        // console.log(JSON.stringify(fieldsValue))
+      });
+    }
+  };
+  return (
+    <div className={styles.normal}>
+      <form action={url} method="get" onClick={handleSubmit}>
+        {
+          Object.keys(exportInputs).map((name, index) => {
+            const values = Object.values(exportInputs);
+            return (<input name={name} value={values[index]} type='hidden' />);
+          })
+        }
+        {/* <Button type="primary" id="pusEas" className={styles.marginSpace}>推送到金蝶</Button> */}
+        <Button htmlType="submit" id="export" className={styles.marginSpace}>导出</Button>
+      </form>
+    </div>
+  );
+}
+GlobalExportForm.PropTypes = {
+  url: PropTypes.string.required,
+  reduceName: PropTypes.string.required,
+  exportInputs: PropTypes.object,
+};
+export default GlobalExportForm;

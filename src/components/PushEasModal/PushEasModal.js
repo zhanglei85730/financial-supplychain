@@ -1,0 +1,125 @@
+import React from 'react';
+import { connect } from 'dva';
+import { Modal, Progress, Icon } from 'antd';
+import PropTypes from 'prop-types';
+import consts from '../../config/const.js';
+
+let currentProgress = 5;
+let allTotal = 0;
+class PushEasModal extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleCancel = this.handleCancel.bind(this);
+    this.handleOk = this.handleOk.bind(this);
+  }
+  state = {
+    type: 'active',
+    loading: true,
+  }
+  isPushSuccess = false
+  // 刷新表格
+  refreshTable() {
+    if (this.isPushSuccess && this.props.hasOwnProperty('globalPagationParam') && this.props.globalPagationParam !== null) {
+      this.props.dispatch({ type: this.props.refreshTableRedece, payload: this.props.globalPagationParam });
+    }
+  }
+  handleOk() {
+    //refreshTableRedece
+    this.props.dispatch({ type: 'common/pushEasModalRedece', payload: !this.props.pushEasModalVisible });
+    this.refreshTable();
+  }
+  handleCancel() {
+    this.refreshTable();
+    this.props.dispatch({ type: 'common/pushEasClearResponseRedece', payload: [] });
+    this.props.dispatch({ type: 'common/pushEasModalRedece', payload: !this.props.pushEasModalVisible });
+  }
+  render() {
+    const listData = this.props.pushEasResponse;
+    const successColor = { color: '#1890ff' };
+    const failColor = { color: '#f5222d' };
+    const subError = { marginLeft: '20px' };
+    //   // 当前推送 
+    const lastMessage = this.props.pushEasResponse.length > 0 ? this.props.pushEasResponse[this.props.pushEasResponse.length - 1] : {};
+    if (lastMessage.hasOwnProperty('type') && lastMessage.type === 'TOTAL_COUNT') {
+      allTotal = lastMessage.allTotal;
+    }
+    if (lastMessage.hasOwnProperty('total') && !!lastMessage.total) {
+      currentProgress = lastMessage.total / allTotal * 100;
+    }
+    return (
+      <Modal
+        title="推送到金蝶"
+        visible={this.props.pushEasModalVisible}
+        onOk={this.handleOk}
+        onCancel={this.handleCancel}
+        okText="完成"
+        confirmLoading={this.state.loading}
+        closable={false}
+        width={600}
+        maskClosable={false}
+      >
+        <Progress percent={currentProgress} status={this.state.type} />
+        <div style={consts.pushEasModalStyle}>
+          {
+            listData.map((item, index) => {
+              const key = index;
+              // 连接服务器成功
+              if (item.hasOwnProperty('type') && item.type === 'CONNECT_SUCCESS' && item.hasOwnProperty('msg') && item.msg != null) {
+                return <div style={successColor} key={key}> <Icon type="check-circle-o" /> {item.msg}</div>;
+              }
+              // 出错，输出msg             
+              if (item.hasOwnProperty('type') && item.type === 'TOTAL_PART_COUNT' &&
+                item.hasOwnProperty('msg')) {
+                try {
+                  let msgArr = false;
+                  if (item.msg !== null) {
+                    msgArr = JSON.parse(item.msg) ? JSON.parse(item.msg) : [];
+                  }
+                  // msg数组大于0表示出错
+                  if (msgArr && msgArr.length > 0) {
+                    const rr = msgArr.map((item) => {
+                      return <div style={subError}>{item}</div>;
+                    });
+                    return (
+                      <div style={failColor} key={key}> <Icon type="close-circle-o" /> 当前推送进度：{item.total}条/{allTotal}条{rr}</div>
+                    );
+                  } else {
+                    return (
+                      <div style={successColor} key={key}> <Icon type="check-circle-o" /> 当前推送进度：{item.total}条/{allTotal}条</div>
+                    );
+                  }
+                } catch (err) {
+                }
+              }
+              if (item.hasOwnProperty('type') && item.type === "SUCCESS") {
+                // 刷新表格
+                this.isPushSuccess = true;
+                if (this.state.type === 'active') {
+                  this.setState({ type: '' });
+                  this.setState({ loading: false });
+                }
+                return <div style={successColor} key={key}> <Icon type="check-circle-o" /> 推送完成</div>;
+              }
+              // 推送失败
+              if (item.hasOwnProperty('type') && item.type === "ERROR") {
+                let failStr = '';
+                if (item.hasOwnProperty('msg') && item.msg !== null) {
+                  failStr = item.msg;
+                }
+                return <div style={failColor} key={key}> <Icon type="close-circle-o" /> 推送失败： {failStr}</div>;
+              }
+            })
+          }
+        </div>
+      </Modal>
+    );
+  }
+}
+PushEasModal.PropTypes = {
+  globalPagationParam: PropTypes.object,
+};
+function mapStateToProps({ common }) {
+  const { pushEasModalVisible, pushEasResponse } = common;
+  return { pushEasModalVisible, pushEasResponse };
+}
+export default connect(mapStateToProps)(PushEasModal);

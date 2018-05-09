@@ -1,0 +1,5 @@
+
+.normal {
+    /* float:left */
+    display: inline-block
+}

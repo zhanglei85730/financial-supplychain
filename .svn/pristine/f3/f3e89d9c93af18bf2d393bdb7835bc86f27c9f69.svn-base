@@ -1,0 +1,53 @@
+import React from 'react';
+import { Button, Form } from 'antd';
+import { connect } from 'dva';
+import PropTypes from 'prop-types';
+import packageConst from './packageConst.js';
+import styles from './style.less';
+import CollapseBtn from '../../components/CollapseBtn/CollapseBtn.js';
+import consts from '../../config/const.js';
+
+function FormButtons({ dispatch, form, formCollapse }) {
+  // form提交事件
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    form.validateFields((err, fieldsValue) => {
+      dispatch({ type: `${packageConst.modelNameSapce}/tableData`, payload: Object.assign(fieldsValue, consts.initPagination) });
+    });
+  };
+  // 导出
+  const exportHandle = () => {
+    form.validateFields((err, fieldsValue) => {
+      dispatch({ type: `${packageConst.modelNameSapce}/exportFile`, payload: fieldsValue });
+    });
+  };
+  // 重置
+  const restHandle = () => {
+    form.resetFields();
+  };
+  return (
+    <Form.Item>
+      <span className={styles.searchFormBtns}>
+        <Button type="primary" htmlType="submit" key="query" onClick={handleSubmit}>查询</Button>
+        <Button onClick={restHandle} key="reset">重置</Button>
+        <CollapseBtn
+          action={`${packageConst.modelNameSapce}/formCollapseReduce`}
+          dispatch={dispatch}
+          formCollapse={formCollapse}
+        />
+      </span>
+    </Form.Item >
+  );
+}
+// props 检查
+FormButtons.propsType = {
+  dispatch: PropTypes.func.required,
+  action: PropTypes.string.required,
+  formCollapse: PropTypes.bool.required,
+  form: PropTypes.object.required,
+};
+// function mapStateToProps({ commonInbound }) {
+//   return commonInbound;
+// }
+// export default connect(mapStateToProps)(FormButtons);
+export default FormButtons;

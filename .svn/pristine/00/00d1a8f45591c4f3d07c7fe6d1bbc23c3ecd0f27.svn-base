@@ -1,0 +1,80 @@
+import React from 'react';
+import { connect } from 'dva';
+import Proptypes from 'prop-types';
+import SearchForm from './SearchForm.js';
+import DataTable from './DataTable.js';
+import styles from './PurchaseOrders.css';
+
+class PurchaseOrders extends React.Component {
+  getChildContext() {
+    return {
+      allOrg: this.props.allOrg,
+      currency: this.props.currency,
+      allCorporation: this.props.allCorporation,
+      allPaymentMethod: this.props.allPaymentMethod,
+      allVoucherStatus: this.props.allVoucherStatus,
+      pushEasModalVisible: this.props.pushEasModalVisible,
+      uuid: this.props.uuid,
+      selectedRowsArr: this.props.selectedRowsArr,
+      pushEasResponse: this.props.pushEasResponse,
+      exportInputs: this.props.exportInputs,
+      supplierModalVisibile: this.props.supplierModalVisibile,
+      supplierList: this.props.supplierList,
+      supplierSelect: this.props.supplierSelect,
+      tableDataSum: this.props.tableDataSum,
+      loading: this.props.loading,
+      supplierTotal: this.props.supplierTotal,
+      queryParams: this.props.queryParams,
+    };
+  }
+  render() {
+    const {
+      dispatch,
+      formCollapse,
+      selectedRowKeysArr,
+      loading,
+      list,
+      total,
+      } = this.props;
+    return (
+      <div className={styles.normal}>
+        <SearchForm
+          dispatch={dispatch}
+          formCollapse={formCollapse}
+        />
+        <DataTable
+          dispatch={dispatch}
+          list={list}
+          loading={loading}
+          selectedRowKeysArr={selectedRowKeysArr}
+          total={total}
+        />
+      </div>
+    );
+  }
+}
+
+PurchaseOrders.childContextTypes = {
+  allOrg: Proptypes.array,
+  currency: Proptypes.array,
+  allCorporation: Proptypes.array,
+  allPaymentMethod: Proptypes.array,
+  allVoucherStatus: Proptypes.object,
+  pushEasModalVisible: Proptypes.bool,
+  uuid: Proptypes.string,
+  selectedRowsArr: Proptypes.array,
+  pushEasResponse: Proptypes.array,
+  exportInputs: Proptypes.object,
+  supplierModalVisibile: Proptypes.bool,
+  supplierList: Proptypes.array,
+  supplierSelect: Proptypes.object,
+  tableDataSum: Proptypes.object,
+  loading: Proptypes.bool,
+  supplierTotal: Proptypes.number,
+  queryParams: Proptypes.object,
+};
+
+function mapStateToProps({ purchaseOrders, common }) {
+  return { ...purchaseOrders, ...common };
+}
+export default connect(mapStateToProps)(PurchaseOrders);

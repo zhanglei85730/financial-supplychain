@@ -1,0 +1,231 @@
+import menuData from '../config/menu.js';
+import * as service from '../services/common.js';
+
+export default {
+  namespace: 'common',
+  state: {
+    breadcrumb: [
+      {
+        name: '金蝶供应链',
+      },
+    ],
+    // 菜单默认选中
+    activeKey: 'purchaseOrders',
+    // 所有法人
+    allCorporation: [],
+    // 结算方式
+    allPaymentMethod: [],
+    // 付款方式
+    allPayment: [],
+    // 付款单下面的付款方式
+    allFundsPayment: {},
+    // 事业部select
+    allOrg: [],
+    allVoucherStatus: {},
+    allWarehouse: [],
+    // 供应商
+    supplierModalVisibile: false,
+    // 供应商
+    supplierList: [],
+    supplierSelect: {},
+    // 查询参数
+    queryParams: {},
+    // 币别    
+    currency: [
+      { value: 'CNY', text: 'CNY' },
+      { value: 'USD', text: 'USD' },
+      { value: 'GBP', text: 'GBP' },
+      { value: 'EUR', text: 'EUR' },
+      { value: 'AUD', text: 'AUD' },
+      { value: 'BRL', text: 'BRL' },
+      { value: 'CHF', text: 'CHF' },
+      { value: 'CZK', text: 'CZK' },
+      { value: 'DKK', text: 'DKK' },
+      { value: 'HKD', text: 'HKD' },
+      { value: 'HUF', text: 'HUF' },
+      { value: 'JPY', text: 'JPY' },
+      { value: 'MXN', text: 'MXN' },
+      { value: 'NOK', text: 'NOK' },
+      { value: 'NZD', text: 'NZD' },
+      { value: 'PLN', text: 'PLN' },
+      { value: 'PHP', text: 'PHP' },
+      { value: 'RUB', text: 'RUB' },
+      { value: 'SEK', text: 'SEK' },
+      { value: 'SGD', text: 'SGD' },
+    ],
+  },
+  reducers: {
+    changeBreadcrumb(state, { payload: breadcrumb }) {
+      return { ...state, ...breadcrumb };
+    },
+    updateActiveIndex(state, action) {
+      const pathname = action.payload;
+      // let breadcrumbItem = '';
+      const breadcrumbArr = [];
+      // 生成层级面包削方法
+      function breadcrumb(node) {
+        node.map((item) => {
+          if (item.hasOwnProperty('children')) {
+            breadcrumb(item.children);
+          } else {
+            // breadcrumbItem = node.name;
+            if (pathname === item.path) {
+              if (item.hasOwnProperty('parentName')) {
+                breadcrumbArr.push({ name: item.parentName }, { name: item.name });
+              } else {
+                breadcrumbArr.push({ name: item.name });
+              }
+            }
+          }
+        });
+      }
+      breadcrumb(menuData);
+      return {
+        ...state,
+        breadcrumb: [state.breadcrumb[0], ...breadcrumbArr],
+      };
+    },
+    // 所有法人
+    getAllCorporationReduce(state, { payload }) {
+      return { ...state, allCorporation: payload };
+    },
+    // 所有事业部
+    getAllOrgReduce(state, { payload }) {
+      return { ...state, allOrg: payload };
+    },
+    // 结算方式
+    getAllPaymentMethodRedece(state, { payload }) {
+      return { ...state, allPaymentMethod: payload };
+    },
+    // 付款方式
+    getAllPaymentRedece(state, { payload }) {
+      return { ...state, allPayment: payload };
+    },
+    // 付款单下的付款方式
+    getallFundsPaymentRedece(state, { payload }) {
+      return { ...state, allFundsPayment: payload };
+    },
+    // 单据状态
+    getAllVoucherStatusRedece(state, { payload }) {
+      return { ...state, allVoucherStatus: payload };
+    },
+    // 仓库名称
+    getAllWarehouseRedece(state, { payload }) {
+      return { ...state, allWarehouse: payload };
+    },
+    // 供应商
+    supplierModalVisibileReduce(state, { payload }) {
+      return { ...state, supplierModalVisibile: payload };
+    },
+    // 供应商
+    allSupplierReduce(state, { payload }) {
+      return { ...state, supplierList: payload.rows };
+    },
+    supplierSelect(state, { payload }) {
+      return { ...state, supplierSelect: payload };
+    },
+    supplierSearchListReduce(state, { payload }) {
+      if (!payload || !(payload.hasOwnProperty('rows') && Array.isArray(payload.rows) && payload.rows.length !== 0)) {
+        return { ...state, supplierSearchList: [] };
+      }
+      return { ...state, supplierSearchList: payload };
+    },
+    ClearSupplierSelect(state, { payload }) {
+      return { ...state, supplierSelect: {} };
+    },
+    // 查询参数
+    queryParamsReduce(state, { payload }) {
+      return { ...state, queryParams: payload };
+    },
+  },
+  effects: {
+    *getAllCorporation({ payload }, { call, put }) {
+      const { data } = yield call(service.getAllCorporation, payload);
+      yield put({
+        type: 'getAllCorporationReduce',
+        payload: data.data,
+      });
+    },
+    *getAllOrg({ payload }, { call, put }) {
+      const { data } = yield call(service.getAllOrg);
+      yield put({
+        type: 'getAllOrgReduce',
+        payload: data.data,
+      });
+    },
+    *getAllPaymentMethod({ payload }, { call, put }) {
+      const { data } = yield call(service.getAllPaymentMethod);
+      yield put({
+        type: 'getAllPaymentMethodRedece',
+        payload: data.data,
+      });
+    },
+    *getAllPayment({ payload }, { call, put }) {
+      const { data } = yield call(service.getAllPayment);
+      yield put({
+        type: 'getAllPaymentRedece',
+        payload: data.data,
+      });
+    },
+    *allFundsPayment({ payload }, { call, put }) {
+      const { data } = yield call(service.getAllFundsPayment);
+      yield put({
+        type: 'getallFundsPaymentRedece',
+        payload: data.data,
+      });
+    },
+    *getAllVoucherStatus({ payload }, { call, put }) {
+      const { data } = yield call(service.getAllVoucherStatus);
+      yield put({
+        type: 'getAllVoucherStatusRedece',
+        payload: data.data,
+      });
+    },
+    *getAllWarehouse({ payload }, { call, put }) {
+      const { data } = yield call(service.getAllWarehouse);
+      yield put({
+        type: 'getAllWarehouseRedece',
+        payload: data.data,
+      });
+    },
+    *getAllSupplier({ payload }, { call, put }) {
+      const { data } = yield call(service.getAllSupplier, payload);
+      yield put({
+        type: 'allSupplierReduce',
+        payload: data.data,
+      });
+    },
+  },
+  subscriptions: {
+    setup({ dispatch, history }) {
+      history.listen(({ pathname }) => {
+        // 切换页面清空查询条件
+        dispatch({ type: 'queryParamsReduce', payload: {} });
+        // 切换页面清空统一状态选择的供应商
+        dispatch({ type: 'supplierSelect', payload: {} });
+        dispatch({ type: 'getAllOrg' });
+        dispatch({ type: 'getAllCorporation' });
+        dispatch({ type: 'getAllPaymentMethod' });
+        dispatch({ type: 'getAllVoucherStatus' });
+        dispatch({ type: 'getAllWarehouse' });
+        dispatch({ type: 'getAllPayment' });
+        // 仓库
+        if (pathname === '/commonInbound' ||
+          pathname === '/purchaseReturn') {
+          dispatch({ type: 'getAllWarehouse' });
+        }
+        // 付款单下的付款方式
+        if (pathname === '/purchaseAdvance' ||
+          pathname === '/purchasePayment' ||
+          pathname === '/purchaseRefunds') {
+          dispatch({ type: 'allFundsPayment' });
+        }
+        dispatch({
+          type: 'updateActiveIndex',
+          payload: pathname,
+        });
+      });
+    },
+  },
+};
+

@@ -1,0 +1,17 @@
+import React from 'react';
+import { connect } from 'dva';
+import styles from './CorporateTransferDetail.css';
+
+function CorporateTransferDetail() {
+  return (
+    <div className={styles.normal}>
+      Route Component: CorporateTransferDetail/CorporateTransferDetail
+    </div>
+  );
+}
+
+function mapStateToProps() {
+  return {};
+}
+
+export default connect(mapStateToProps)(CorporateTransferDetail);

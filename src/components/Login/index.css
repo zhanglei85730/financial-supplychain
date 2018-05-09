@@ -1,0 +1,20 @@
+.loginForm {
+    max-width: 440px;
+  }
+.loginFormForgot {
+    float: right;
+  }
+.loginFormButton {
+    width: 100%;
+  }
+  .container{
+      background:#efefef url('./../../assets/bg.svg');
+      background-size:contain;
+      height: 100vh;
+       box-sizing: border-box;
+       overflow: hidden
+  }
+  .loginTitle{
+        text-align:center;
+        color:#888
+  }

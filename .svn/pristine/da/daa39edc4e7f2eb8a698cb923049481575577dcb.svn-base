@@ -1,0 +1,7 @@
+.menu {
+    :global{
+        .anticon{ margin-right: 8px;}
+        .ant-dropdown-menu-item{width: 160px;}
+    }
+}
+.rigitIcon{margin:0 6px;font-size:18px}
