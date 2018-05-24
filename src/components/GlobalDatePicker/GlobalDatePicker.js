@@ -1,0 +1,19 @@
+import React from 'react';
+import { Form, DatePicker } from 'antd';
+
+const FormItem = Form.Item;
+function GlobalDatePicker({ form, ...rest }) {
+  const { getFieldDecorator } = form;
+  const { id, label, subType, ...RangePickerRest } = rest;
+  const subComponentName = subType[0].toUpperCase() + subType.slice(1);
+  const DateComponent = DatePicker[subComponentName];
+  return (
+    <FormItem label={label}>
+      {getFieldDecorator(id, [{ required: false }])(
+        <DateComponent {...RangePickerRest} />
+      )}
+    </FormItem>
+  );
+}
+
+export default GlobalDatePicker;

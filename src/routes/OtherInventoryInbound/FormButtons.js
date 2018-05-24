@@ -6,7 +6,7 @@ import styles from './style.less';
 import CollapseBtn from '../../components/CollapseBtn/CollapseBtn.js';
 import consts from '../../config/const.js';
 import packageConst from './packageConst.js';
-import * as util from '../../utils/util.js';
+import { formParamsFormater } from '../../utils/util.js';
 
 function FormButtons({
   dispatch,
@@ -18,24 +18,12 @@ function FormButtons({
   const handleSubmit = (e) => {
     e.preventDefault();
     form.validateFields((err, fieldsValue) => {
-      let queryDate = {};
-      let payloadData = {};
-      const formparams = util.deleteJsonEmptyProps(fieldsValue);
-      if (fieldsValue.hasOwnProperty('queryDate') && fieldsValue.queryDate && fieldsValue.queryDate.length > 1) {
-        queryDate = `${fieldsValue.queryDate[0].format(`YYYY-MM-DD 00:00:00`)},${fieldsValue.queryDate[1].format('YYYY-MM-DD 23:59:59')}`;
-        payloadData = Object.assign(
-          formparams,
-          consts.initPagination,
-          { queryDate },
-          { offset: 0, limit: consts.defaultPageSize - consts.extraPageSize },
-        );
-      } else {
-        payloadData = Object.assign(
-          formparams,
-          consts.initPagination,
-          { offset: 0, limit: consts.defaultPageSize - consts.extraPageSize },
-        );
-      }
+      const formparams = formParamsFormater(fieldsValue);
+      const payloadData = Object.assign(
+        formparams,
+        consts.initPagination,
+        { offset: 0, limit: consts.defaultPageSize - consts.extraPageSize },
+      );
       dispatch({ type: `${packageConst.modelNameSapce}/tableLoadingReduce`, payload: true });
       dispatch({
         type: `${packageConst.modelNameSapce}/tableData`,
@@ -53,9 +41,6 @@ function FormButtons({
   const restHandle = () => {
     form.resetFields();
   };
-  // const linkTest = () => {
-  //   dispatch(routerRedux.push('/freight'));
-  // };
   return (
     <Form.Item>
       <span className={styles.searchFormBtns}>

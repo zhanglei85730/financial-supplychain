@@ -1,0 +1,278 @@
+import React from 'react';
+import { Form, Row, Col, Button } from 'antd';
+import { connect } from 'dva';
+import PropTypes from 'prop-types';
+import FormButtons from './FormButtons.js';
+import consts from '../../config/const.js';
+import GlobalSearchForm from '../../components/GlobalSearchForm/GlobalSearchForm.js';
+import PushEasModal from '../../components/PushEasModal/PushEasModal.js';
+import GlobalExportForm from '../../components/GlobalExportForm/GlobalExportForm.js';
+import PushEas from '../../components/PushEas/PushEas.js';
+import AllSupplier from '../../components/AllSupplier/AllSupplier.js';
+import packageConst from './packageConst.js';
+import { jsonToSelectOptions } from '../../utils/util.js';
+
+function SearchForm({
+  dispatch,
+  formCollapse,
+  form,
+  allOrg,
+  currency,
+  allCorporation,
+  allPaymentMethod,
+  allVoucherStatus,
+  supplierModalVisibile,
+  supplierList,
+  supplierSearchList,
+  supplierTableLoading,
+  supplierSelect,
+  loading,
+  pushEasResponse,
+  selectedRowsArr,
+  exportInputs,
+  globalPagationParam,
+}) {
+  const formCol = formCollapse ? { md: 8, sm: 24 } : { md: 6, sm: 24 };
+  const collapseFormCol = { md: 8, sm: 24 };
+  const buttonsCol = {
+    type: 'custom',
+    formCol,
+    component: <FormButtons
+      form={form}
+      dispatch={dispatch}
+      formCollapse={formCollapse}
+      loading={loading}
+    />,
+  };
+  const formItemsConfig = [
+    // 第一行
+    [{
+      label: '核销时间',
+      type: 'rangePicker',
+      id: 'postDate',
+      formCol,
+    },
+    {
+      label: '调拨单号',
+      id: 'transferNumber',
+      type: 'text',
+      formCol,
+    },
+    {
+      id: 'verifityStatus',
+      // 同select属性,可以附加 select的属性
+      type: 'select',
+      label: '状态',
+      formCol,
+      // input数据
+      data: [
+        { value: 'SEND', text: '已出库' },
+        { value: 'PART_SEND', text: '部分发货' },
+        { value: 'CLOSED', text: '已完结' },
+        { value: 'WAIT_VERIFITY', text: '待核销' },
+      ],
+    }],
+  ];
+  const voucherStatus = [];
+  const voucherStatusObj = allVoucherStatus;
+
+  // 单据状态返回的是json
+  for (const key in voucherStatusObj) {
+    voucherStatus.push({ value: key, text: voucherStatusObj[key] });
+  }
+  const collapseFormItemsConfig = [
+    // 第二行
+    [{
+      label: 'SKU',
+      type: 'text',
+      id: 'sku',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'outWarehouseName',
+      type: 'text',
+      label: '出库仓',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'inWarehouseName',
+      type: 'text',
+      label: '入库仓',
+      formCol: { ...collapseFormCol },
+    }],
+    // 第三行
+    [{
+      id: 'site',
+      // 同select属性,可以附加 select的属性
+      type: 'select',
+      label: '运输方式',
+      formCol: { ...collapseFormCol },
+      data: [
+        {
+          value: 0,
+          text: '海运 ',
+        },
+        {
+          value: 1,
+          text: '海运 ',
+        },
+        {
+          value: 2,
+          text: '快递 ',
+        },
+        {
+          value: 3,
+          text: '铁运 ',
+        },
+        {
+          value: 4,
+          text: '无 ',
+        },
+      ],
+    }, {
+      label: '柜号',
+      type: 'text',
+      id: 'buyerName',
+      formCol: { ...collapseFormCol },
+    }, {
+      label: '核销单号',
+      type: 'text',
+      id: 'verifityNumber',
+      formCol: { ...collapseFormCol },
+    }],
+    [{
+      label: '单据状态',
+      type: 'select',
+      id: 'voucherStatus',
+      formCol: { md: 8 },
+      data: jsonToSelectOptions(allVoucherStatus),
+    }, {
+      label: '单据号',
+      type: 'text',
+      id: 'voucherNumber',
+      formCol: { md: 8 },
+    }, {
+      type: 'custom',
+      formCol: { md: 8 },
+      component: <FormButtons
+        form={form}
+        dispatch={dispatch}
+        formCollapse={formCollapse}
+      />,
+    }],
+  ];
+  let formItemsResult = formItemsConfig;
+  // form展开
+  if (!formCollapse) {
+    const formItemsConfigLastNode = formItemsConfig[formItemsConfig.length - 1];
+    formItemsResult = [formItemsConfigLastNode.concat([buttonsCol])];
+  }
+  const toolMarginTop = { marginTop: '20px' };
+  const marmginLeft = { marginLeft: '10px' };
+  // 非FBA仓核销-审核
+  const verifityHandle = (e) => {
+    const target = e.target.id;
+    let url = '';
+    switch (target) {
+      // 审核
+      case 'verifityHandle':
+        url = '/api/unfba/non_fba_transfer_verifity/verifity';
+        break;
+      // 过账
+      case 'postHandle':
+        url = '/api/unfba/non_fba_transfer_verifity/post';
+        break;
+      // 反审核
+      case 'unVerifityyHandle':
+        url = '/api/unfba/non_fba_transfer_verifity/unVerifity';
+        break;
+      // 反核销
+      case 'unPostHandle':
+        url = '/api/unfba/non_fba_transfer_verifity/unPost';
+        break;
+      // 审核生成其他出库数据
+      case 'genOtherOutDataPostHandle':
+        url = '/api/unfba/non_fba_transfer_order/gen_other_out_data`';
+        break;
+      // 反审核
+      default:
+        url = false;
+    }
+    if (!url) {
+      return;
+    }
+    form.validateFields((err, fieldsValue) => {
+      dispatch({
+        type: 'common/commonApproveDataWithcondition',
+        payload: {
+          url: `${consts.domainOverseasTransfer}${url}`,
+          selectedRowsArr,
+          fieldsValue,
+          dispatch,
+          action: { type: `${packageConst.modelNameSapce}/tableData` },
+          type: 'post',
+        },
+      });
+    });
+  };
+  return (
+    <span>
+      <GlobalSearchForm
+        formItems={formItemsResult}
+        formCollapse={formCollapse}
+        collapseFormItems={collapseFormItemsConfig}
+        dispatch={dispatch}
+        form={form}
+      />
+      <Row>
+        <Col style={toolMarginTop}>
+          <GlobalExportForm
+            url={`${consts.domain}/api/getPurchaseOrderList/export`}
+            form={form}
+            exportInputs={exportInputs}
+            dispatch={dispatch}
+            reduceName="chaseOrders/exportInputsReduce"
+            buttonType="primary"
+          />
+          <Button style={marmginLeft} onClick={verifityHandle} id="verifityHandle">审核</Button>
+          <Button style={marmginLeft} onClick={verifityHandle} id="postHandle">过账</Button>
+          <Button style={marmginLeft} onClick={verifityHandle} id="unVerifityyHandle">反审核</Button>
+          <Button style={marmginLeft} onClick={verifityHandle} id="unPostHandle">反核销</Button>
+          <Button style={marmginLeft} onClick={verifityHandle} id="genOtherOutDataPostHandle">审核生成其他出库数据</Button>
+        </Col>
+      </Row>
+      {/* 所有供应商 */}
+      <AllSupplier
+        isVisibile={supplierModalVisibile}
+        dispatch={dispatch}
+        supplierList={supplierList}
+        form={form}
+        supplierSearchList={supplierSearchList}
+        supplierTableLoading={supplierTableLoading}
+        supplierSelect={supplierSelect}
+      />
+      <PushEasModal
+        dispatch={dispatch}
+        refreshTableRedece={`${packageConst.modelNameSapce}/tableData`}
+        globalPagationParam={globalPagationParam}
+      />
+    </span>
+  );
+}
+SearchForm.propTypes = {
+  allOrg: PropTypes.array,
+  currency: PropTypes.array,
+  allCorporation: PropTypes.array,
+  allPaymentMethod: PropTypes.array,
+  allVoucherStatus: PropTypes.object,
+  supplierModalVisibile: PropTypes.bool,
+  supplierTableLoading: PropTypes.bool,
+  globalPagationParam: PropTypes.object,
+  exportInputs: PropTypes.object,
+  selectedRowsArr: PropTypes.array,
+  loading: PropTypes.bool,
+};
+const SearchFormWrapped = Form.create(consts.formCreateOptions)(SearchForm);
+function mapStateToProps({ common, overseasTransferVerification }) {
+  const { loading, selectedRowsArr, exportInputs } = overseasTransferVerification;
+  return { ...common, loading, selectedRowsArr, exportInputs };
+}
+export default connect(mapStateToProps)(SearchFormWrapped);

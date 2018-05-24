@@ -1,0 +1,166 @@
+﻿import React from 'react';
+import { Form, Row, Col, Button, Modal, Upload } from 'antd';
+import PropTypes from 'prop-types';
+import { connect } from 'dva';
+import FormButtons from './FormButtons.js';
+import consts from '../../config/const.js';
+import GlobalSearchForm from '../../components/GlobalSearchForm/GlobalSearchForm.js';
+import packageConst from './packageConst.js';
+import AddModal from './AddModal.js';
+import { getToken } from '../../utils/util.js';
+
+function SearchForm({
+  dispatch,
+  formCollapse,
+  form,
+  allVoucherStatus,
+  loading,
+  selectedRowsArr,
+  addModalVisible,
+   }) {
+  const formCol = formCollapse ? { md: 8, sm: 24 } : { md: 6, sm: 24 };
+  const buttonsCol = {
+    type: 'custom',
+    formCol,
+    component: <FormButtons
+      form={form}
+      dispatch={dispatch}
+      formCollapse={formCollapse}
+      loading={loading}
+    />,
+  };
+  const formItemsConfig = [
+    // 第一行
+    [{
+      label: 'E登仓库名称',
+      type: 'text',
+      id: 'warehouseName',
+      formCol,
+    },
+    {
+      id: 'kisWarehouseName',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '金蝶仓库名称',
+      formCol,
+    },
+    {
+      id: 'kisWarehouseId',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '金蝶仓库ID',
+      formCol,
+    }],
+  ];
+  const voucherStatus = [];
+  const voucherStatusObj = allVoucherStatus;
+
+  // 单据状态返回的是json
+  for (const key in voucherStatusObj) {
+    voucherStatus.push({ value: key, text: voucherStatusObj[key] });
+  }
+  const collapseFormItemsConfig = [
+    [
+      {
+        label: 'E登仓库ID',
+        type: 'text',
+        id: 'warehouseId',
+        formCol: { md: 8 },
+      }, {
+        type: 'custom',
+        formCol: { md: 16 },
+        component: <FormButtons
+          form={form}
+          dispatch={dispatch}
+          formCollapse={formCollapse}
+        />,
+      }],
+  ];
+  let formItemsResult = formItemsConfig;
+  // form展开
+  if (!formCollapse) {
+    const formItemsConfigLastNode = formItemsConfig[formItemsConfig.length - 1];
+    formItemsResult = [formItemsConfigLastNode.concat([buttonsCol])];
+  }
+  const toolMarginTop = { marginTop: '20px' };
+  const toggleAddModal = () => {
+    dispatch({ type: `${packageConst.modelNameSapce}/addModalReduce`, payload: true });
+  };
+  // 确定按钮
+  const okHandle = () => {
+
+  };
+  const cancelAddModal = () => {
+    dispatch({ type: `${packageConst.modelNameSapce}/addModalReduce`, payload: false });
+  };
+  const deleteHandle = () => {
+    dispatch({
+      type: 'common/commonDeleteData',
+      payload: {
+        selectedRowsArr,
+        url: `${consts.domainBusinessTypeMaintenance}/warehouse/delete`,
+        paramsKey: 'idList',
+        refreshTableReduce: `${packageConst.modelNameSapce}/tableData`,
+      },
+    });
+  };
+  const uploadStyle = { display: 'inline-block' };
+  const marginLeft = { marginLeft: "10px" };
+  return (
+    <span>
+      <GlobalSearchForm
+        formItems={formItemsResult}
+        formCollapse={formCollapse}
+        collapseFormItems={collapseFormItemsConfig}
+        dispatch={dispatch}
+        form={form}
+      />
+      <Row>
+        <Col style={toolMarginTop}>
+          <Button type="primary" onClick={toggleAddModal}>新增</Button>
+          {/* <Button style={marginLeft}>修改</Button> */}
+          <Button style={marginLeft} onClick={deleteHandle}>删除</Button>
+          <Upload
+            style={uploadStyle}
+            className="exportBtnInline"
+            headers={getToken()}
+            name="uploadFile"
+            action={`${consts.domainBusinessTypeMaintenance}/businessType/importExcel`}
+          >
+            <Button style={marginLeft}>导入</Button>
+          </Upload>
+        </Col>
+      </Row>
+      <Modal
+        title="新建"
+        visible={addModalVisible}
+        onCancel={cancelAddModal}
+        onOk={okHandle}
+        width={500}
+        destroyOnClose
+        footer={null}
+      >
+        <AddModal />
+      </Modal>
+    </span>
+  );
+}
+SearchForm.PropTypes = {
+  allOrg: PropTypes.array,
+  currency: PropTypes.array,
+  allCorporation: PropTypes.array,
+  allPaymentMethod: PropTypes.array,
+  allVoucherStatus: PropTypes.object,
+  supplierModalVisibile: PropTypes.bool,
+  supplierTableLoading: PropTypes.bool,
+  globalPagationParam: PropTypes.object,
+  exportInputs: PropTypes.object,
+  selectedRowsArr: PropTypes.array,
+  loading: PropTypes.bool,
+};
+const SearchFormWrapped = Form.create(consts.formCreateOptions)(SearchForm);
+function mapStateToProps({ common, edStorehouseMaintenance }) {
+  const { loading, selectedRowsArr, exportInputs, addModalVisible } = edStorehouseMaintenance;
+  return { ...common, loading, selectedRowsArr, exportInputs, addModalVisible };
+}
+export default connect(mapStateToProps)(SearchFormWrapped);

@@ -1,0 +1,240 @@
+import React from 'react';
+import { Form, Row, Col, Button } from 'antd';
+import { connect } from 'dva';
+import PropTypes from 'prop-types';
+import FormButtons from './FormButtons.js';
+import consts from '../../config/const.js';
+import GlobalSearchForm from '../../components/GlobalSearchForm/GlobalSearchForm.js';
+import GlobalExportForm from '../../components/GlobalExportForm/GlobalExportForm.js';
+import packageConst from './packageConst.js';
+import { jsonToSelectOptions } from '../../utils/util.js';
+
+function SearchForm({
+  dispatch,
+  formCollapse,
+  form,
+  currency,
+  allCorporation,
+  allPaymentMethod,
+  allVoucherStatus,
+  loading,
+  exportInputs,
+}) {
+  const formCol = formCollapse ? { md: 8, sm: 24 } : { md: 6, sm: 24 };
+  const collapseFormCol = { md: 8, sm: 24 };
+  const buttonsCol = {
+    type: 'custom',
+    formCol,
+    component: <FormButtons
+      form={form}
+      dispatch={dispatch}
+      formCollapse={formCollapse}
+      loading={loading}
+    />,
+  };
+  const formItemsConfig = [
+    // 第一行
+    [{
+      label: '日期',
+      type: 'rangePicker',
+      id: 'dates',
+      formCol,
+    },
+    {
+      label: '单号',
+      id: 'shipmentItemId',
+      type: 'text',
+      formCol,
+    },
+    {
+      id: 'operateType',
+      // 同select属性,可以附加 select的属性
+      type: 'select',
+      label: '类型',
+      formCol,
+      // input数据
+      data: [
+        {
+          value: '1',
+          text: '期初结存',
+        },
+        {
+          value: '2',
+          text: '调拨出库',
+        },
+        {
+          value: '3',
+          text: '到货入库',
+        },
+        {
+          value: '4',
+          text: '期末结存',
+        },
+        {
+          value: '5',
+          text: '本期合计',
+        },
+      ],
+    }],
+  ];
+  const voucherStatus = [];
+  const voucherStatusObj = allVoucherStatus;
+
+  // 单据状态返回的是json
+  for (const key in voucherStatusObj) {
+    voucherStatus.push({ value: key, text: voucherStatusObj[key] });
+  }
+  const collapseFormItemsConfig = [
+    // 第二行
+    [{
+      label: 'SKU',
+      type: 'text',
+      id: 'sku',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'outputWarehouseName',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '出库仓',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'legalEntityName',
+      // 同select属性,可以附加 select的属性
+      type: 'select',
+      label: '法人主体',
+      formCol: { ...collapseFormCol },
+      // input数据
+      data: allCorporation.map((item, index) => {
+        return { value: item.corporationId, key: index, text: item.corporationName };
+      }),
+    }],
+    // 第三行
+    [{
+      id: 'amazonSiteGroupId',
+      // 同select属性,可以附加 select的属性
+      type: 'select',
+      label: '站点',
+      formCol: { ...collapseFormCol },
+      data: [
+        {
+          value: '11',
+          text: '北美地区',
+        },
+        {
+          value: '12',
+          text: '欧洲',
+        },
+        {
+          value: '13',
+          text: '远东地区',
+        },
+        {
+          value: '14',
+          text: '加拿大',
+        },
+        {
+          value: '15',
+          text: '澳洲',
+        },
+      ],
+    }, {
+      id: 'amazonAccountName',
+      type: 'text',
+      label: '账号',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'departmentName',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '部门',
+      formCol: { ...collapseFormCol },
+    }],
+    // 第四行
+    [{
+      label: '运输方式',
+      type: 'select',
+      id: 'shipmentMethodId',
+      formCol: { md: 8 },
+      data: [{ value: '1', text: '空运' }, { value: '2', text: '海运' }]
+    }, {
+      label: 'shipmentID',
+      type: 'text',
+      id: 'shipmentId',
+      formCol: { ...collapseFormCol },
+    },
+    {
+      label: 'FNSKU',
+      type: 'text',
+      id: 'fnsku',
+      formCol: { ...collapseFormCol },
+    }],
+    [{
+      label: '单据号',
+      type: 'text',
+      id: 'voucherNumber',
+      formCol: { md: 8 },
+    },
+    {
+      label: '单据状态',
+      type: 'select',
+      id: 'voucherStatus',
+      formCol: { md: 8 },
+      data: jsonToSelectOptions(allVoucherStatus),
+    }, {
+      type: 'custom',
+      formCol: { md: 8 },
+      component: <FormButtons
+        form={form}
+        dispatch={dispatch}
+        formCollapse={formCollapse}
+      />,
+    }],
+  ];
+  let formItemsResult = formItemsConfig;
+  // form展开
+  if (!formCollapse) {
+    const formItemsConfigLastNode = formItemsConfig[formItemsConfig.length - 1];
+    formItemsResult = [formItemsConfigLastNode.concat([buttonsCol])];
+  }
+  const toolMarginTop = { marginTop: '20px' };
+  const marmginLeft = { marginLeft: '14px' };
+  return (
+    <span>
+      <GlobalSearchForm
+        formItems={formItemsResult}
+        formCollapse={formCollapse}
+        collapseFormItems={collapseFormItemsConfig}
+        dispatch={dispatch}
+        form={form}
+      />
+      <Row>
+        <Col style={toolMarginTop}>
+          <GlobalExportForm
+            url={`${consts.domain}/api/getPurchaseOrderList/export`}
+            form={form}
+            exportInputs={exportInputs}
+            dispatch={dispatch}
+            reduceName="chaseOrders/exportInputsReduce"
+            buttonType="primary"
+          />
+          <Button style={marmginLeft}>导入</Button>
+          <Button style={marmginLeft}>审核生成数据</Button>
+        </Col>
+      </Row>
+    </span>
+  );
+}
+SearchForm.propTypes = {
+  currency: PropTypes.array,
+  allCorporation: PropTypes.array,
+  allPaymentMethod: PropTypes.array,
+  allVoucherStatus: PropTypes.object,
+  exportInputs: PropTypes.object,
+  loading: PropTypes.bool,
+};
+const SearchFormWrapped = Form.create()(SearchForm);
+function mapStateToProps({ common, fbaTransferAccount }) {
+  const { loading, selectedRowsArr, exportInputs } = fbaTransferAccount;
+  return { ...common, loading, selectedRowsArr, exportInputs };
+}
+export default connect(mapStateToProps)(SearchFormWrapped);

@@ -1,0 +1,22 @@
+.logo{
+    background:#002140 url('./../../assets/logo-new.png') no-repeat center center;
+    background-size:contain;
+    height: 64px;
+    margin:0;
+}
+.sideMenuContainer{
+    position:fixed;
+    height: 100vh;
+    overflow: auto;
+}
+.customSideBar{
+    overflow: auto;
+}
+.menu{
+    margin-top:30px
+}
+.sideMenuContainer::-webkit-scrollbar {width: 6px;height:6px;}
+.sideMenuContainer::-webkit-scrollbar-track-piece{background-color: #eee;margin: -2px;}
+.sideMenuContainer::-webkit-scrollbar-thumb{background: #aaa;min-height: 150px;min-width: 150px;border-radius: 10px;}
+.sideMenuContainer::-webkit-scrollbar-thumb:vertical:hover{background: #555555}
+.sideMenuContainer::-webkit-scrollbar-thumb:horizontal:hover{background: #555555}

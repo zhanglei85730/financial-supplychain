@@ -1,0 +1,181 @@
+import React from 'react';
+import { Form, Row, Col, Button } from 'antd';
+import { connect } from 'dva';
+import PropTypes from 'prop-types';
+import FormButtons from './FormButtons.js';
+import consts from '../../config/const.js';
+import GlobalSearchForm from '../../components/GlobalSearchForm/GlobalSearchForm.js';
+import GlobalExportForm from '../../components/GlobalExportForm/GlobalExportForm.js';
+import packageConst from './packageConst.js';
+import { jsonToSelectOptions, formParamsFormater } from '../../utils/util.js';
+
+
+function SearchForm({
+  dispatch,
+  formCollapse,
+  form,
+  currency,
+  allCorporation,
+  allVoucherStatus,
+  loading,
+  exportInputs,
+}) {
+  const formCol = formCollapse ? { md: 8, sm: 24 } : { md: 6, sm: 24 };
+  const collapseFormCol = { md: 8, sm: 24 };
+  const buttonsCol = {
+    type: 'custom',
+    formCol,
+    component: <FormButtons
+      form={form}
+      dispatch={dispatch}
+      formCollapse={formCollapse}
+      loading={loading}
+    />,
+  };
+  const formItemsConfig = [
+    // 第一行
+    [{
+      label: '过账时间',
+      type: 'rangePicker',
+      id: 'accountDate',
+      formCol,
+    },
+    {
+      id: 'orignLegalEntity',
+      // 同select属性,可以附加 select的属性
+      type: 'select',
+      label: '法人主体',
+      formCol,
+      // input数据
+      data: allCorporation.map((item, index) => {
+        return { value: item.corporationId, key: index, text: item.corporationName };
+      }),
+    },
+    {
+      id: 'storeNames',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '仓库名称',
+      formCol,
+    }],
+  ];
+  const voucherStatus = [];
+  const voucherStatusObj = allVoucherStatus;
+
+  // 单据状态返回的是json
+  for (const key in voucherStatusObj) {
+    voucherStatus.push({ value: key, text: voucherStatusObj[key] });
+  }
+  const collapseFormItemsConfig = [
+    // 第二行
+    [{
+      label: '部门',
+      type: 'text',
+      id: 'purchaseOrderId',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'warehouseTypes',
+      type: 'text',
+      label: '入库类型',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'sourceBillIds',
+      type: 'text',
+      label: '单据编号',
+      formCol: { ...collapseFormCol },
+    }],
+    // 第三行
+    [{
+      id: 'upcs',
+      type: 'text',
+      label: 'UPC',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'costCenterOrgUnits',
+      type: 'text',
+      label: '成本中心',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'department',
+      type: 'select',
+      label: 'SKU',
+      formCol: { ...collapseFormCol },
+      data: currency,
+    }],
+    [{
+      label: '源单据编号',
+      type: 'text',
+      id: 'documentNumbers',
+      formCol: { md: 8 },
+    },
+    {
+      label: '单据状态',
+      type: 'select',
+      id: 'status',
+      formCol: { md: 8 },
+      data: jsonToSelectOptions(allVoucherStatus),
+    }, {
+      type: 'custom',
+      formCol: { md: 8 },
+      component: <FormButtons
+        form={form}
+        dispatch={dispatch}
+        formCollapse={formCollapse}
+      />,
+    }],
+  ];
+  let formItemsResult = formItemsConfig;
+  // form展开
+  if (!formCollapse) {
+    const formItemsConfigLastNode = formItemsConfig[formItemsConfig.length - 1];
+    formItemsResult = [formItemsConfigLastNode.concat([buttonsCol])];
+  }
+  const toolMarginTop = { marginTop: '20px' };
+  const marmginLeft = { marginLeft: '14px' };
+  // 重算
+  const addCalAgainProcess = () => {
+    form.validateFields((err, fieldsValue) => {
+      const formparams = formParamsFormater(fieldsValue);
+      dispatch({ type: 'otherInventoryInbound/addCalAgainProcess', payload: formparams });
+    });
+  };
+  return (
+    <span>
+      <GlobalSearchForm
+        formItems={formItemsResult}
+        formCollapse={formCollapse}
+        collapseFormItems={collapseFormItemsConfig}
+        dispatch={dispatch}
+        form={form}
+      />
+      <Row>
+        <Col style={toolMarginTop}>
+          <GlobalExportForm
+            url={`${consts.domainInventory}/in_bound_detail/lead_out_csv`}
+            form={form}
+            exportInputs={exportInputs}
+            dispatch={dispatch}
+            reduceName={`${packageConst.modelNameSapce}/exportInputsReduce`}
+            buttonType="primary"
+          />
+          {/* <Button style={marmginLeft}>导入</Button> */}
+          {/* <Button style={marmginLeft}>审核生成数据</Button> */}
+          <Button style={marmginLeft} onClick={addCalAgainProcess}>重算</Button>
+        </Col>
+      </Row>
+    </span>
+  );
+}
+SearchForm.propTypes = {
+  currency: PropTypes.array,
+  allCorporation: PropTypes.array,
+  allVoucherStatus: PropTypes.object,
+  exportInputs: PropTypes.object,
+  loading: PropTypes.bool,
+};
+const SearchFormWrapped = Form.create(consts.formCreateOptions)(SearchForm);
+function mapStateToProps({ common, calAgainProcess }) {
+  const { loading, selectedRowsArr, exportInputs } = calAgainProcess;
+  return { ...common, loading, selectedRowsArr, exportInputs };
+}
+export default connect(mapStateToProps)(SearchFormWrapped);
