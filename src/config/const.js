@@ -6,19 +6,31 @@ export default {
   // domain: 'http://192.168.25.64:9102', // 刘婷
   // 销售数据
   domainSaleData: 'http://financial-fba-inventory.aukeyit.com', // 谢
+  // 默认table数据
+  defaultTableData: {
+    data: {
+      total: 0, rows: [],
+    },
+  },
+  defaultTableDataRowsTotal: {
+    rows: [],
+    total: 0,
+  },
   // 本地开发websocket
   // wsUrl: 'ws://192.168.25.160:9102',
   // 开发部署到域名
   // thisDomain: 'http://financial-supplychain-web.aukeyit.com/',
-  // fba仓库维护(谢)http://financial-fba-inventory.aukeyit.com
-  domainFabStorehouseMaintenance: 'http://financial-fba-inventory.aukeyit.com',
-  // 业务类型维护(吴耿锋)  http://kis-supplychain.aukeyit.com
-  domainBusinessTypeMaintenance: 'http://192.168.25.125:9251',
-  // 出入库明细(吴树添)http://192.168.25.34:9104
+  // fba仓库维护、SKU部门维护(谢)http://financial-fba-inventory.aukeyit.com http://192.168.25.236:9099
+  domainFabStorehouseMaintenance: 'http://192.168.25.236:9099',
+  // 业务类型维护(吴耿锋)  http://kis-supplychain.aukeyit.com http://192.168.25.125:9252
+  domainBusinessTypeMaintenance: 'http://kis-supplychain.aukeyit.com',
+  // 销售出库(吴耿锋)  http://kis-supplychain.aukeyit.com http://192.168.25.125:9252
+  domainSalesOutboundCount: 'http://kis-supplychain.aukeyit.com',
+  // 出入库明细、其他出入库、销售退货(吴树添)http://192.168.25.34:9104
   domainInventory: 'http://eas-pull-view.aukeyit.com',
   // 非FBA调拨(刘婷)(http://192.168.25.64:9099) http://10.1.1.204:9099
   domainOverseasTransfer: 'http://192.168.25.64:9099',
-  // FBA调拨(吴长权) //http://192.168.25.234:9099
+  // FBA调拨(彭长权) //http://192.168.25.234:9099 http://10.1.1.204:9099
   domainFbaWarehouseAllotLedger: 'http://10.1.1.204:9099',
   // 销毁报表(鲁重义)192.168.25.68:9299 
   domainDestroyReport: 'http://10.1.1.204:9299',
@@ -33,13 +45,15 @@ export default {
   mockDomain: 'http://localhost:8000',
   routePrefix: '/',
   // 正式websocket
-  wsUrl: 'ws://10.1.1.204:8091',
+  // wsUrl: 'ws://10.1.1.204:8091',
   // 刘婷
-  // wsUrl: 'ws://192.168.25.64:9102',
+  wsUrl: 'ws://192.168.25.64:9099',
   // 正式websocket(http://legal-allot.aukeyit.com)(调拨单据、跨法人调拨模块)
   wsUrl2: 'ws://10.1.1.204:9095',
   // 其他出入库、出入库明细（吴树添）
   wsUrl3: 'ws://10.1.1.204:9104',
+  // 销售出库（吴耿锋）
+  wsUrl4: 'ws://10.1.1.204:9251',
   // 测试websocket
   //10.1.1.204:8091
   // domain: 'http://localhost:8000',

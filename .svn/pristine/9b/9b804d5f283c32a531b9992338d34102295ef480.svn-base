@@ -1,0 +1,25 @@
+import request from '../utils/request';
+import consts from '../config/const.js';
+import * as util from '../utils/util.js';
+
+// 加载table数据
+export function fetchTableData(payload) {
+  return util.getSecurityHeaderFormLocal().then((opts) => {
+    const { billTime = '2018-01' } = payload;
+    Object.assign(payload, { billTime });
+    const params = util.params(util.deleteJsonEmptyProps(payload));
+    return request(`${consts.domainSalesOutboundCount}/salesStock/list?${params}`, opts);
+  });
+}
+// // table数据总计
+export function getTableDataSum(payload) {
+  return util.getSecurityHeaderFormLocal().then((opts) => {
+    const params = util.params(util.deleteJsonEmptyProps(payload));
+    // debugger
+    // if (!params) {
+    //   params = 'billTime=201801';
+    // }
+    return request(`${consts.domainSalesOutboundCount}/salesStock/sumList?${params}`, opts);
+  });
+}
+

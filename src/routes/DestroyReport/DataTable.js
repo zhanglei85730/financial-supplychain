@@ -74,9 +74,9 @@ function DataTable({
       render: decimalTo4,
     },
     {
-      title: 'ID',
-      key: 'id',
-      dataIndex: 'id',
+      title: '订单id',
+      key: 'orderId',
+      dataIndex: 'orderId',
       ...tdWidth,
     },
     {
@@ -99,6 +99,26 @@ function DataTable({
       key: 'disposedQuantity',
       dataIndex: 'disposedQuantity',
       width: 130,
+    }, {
+      title: '审核状态',
+      key: 'invoiceStatus',
+      dataIndex: 'invoiceStatus',
+      width: 130,
+      render: (value = '') => {
+        let result = '';
+        switch (value) {
+          case 0:
+            result = '未推送';
+            break;
+          case 1:
+            result = '已推送';
+            break;
+          default:
+            result = value;
+            break;
+        }
+        return result;
+      },
     }];
 
 
@@ -132,7 +152,7 @@ function DataTable({
         loading={loading}
         className="nestedTable"
         style={{ marginTop: '20px' }}
-        scroll={Object.assign(consts.globalTableScroll, { x: 1800 })}
+        scroll={Object.assign(consts.globalTableScroll, { x: 2400 })}
         pagination={{
           total,
           defaultPageSize: consts.defaultPageSize,

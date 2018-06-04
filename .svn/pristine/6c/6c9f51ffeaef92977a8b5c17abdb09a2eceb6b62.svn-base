@@ -1,0 +1,242 @@
+import React from 'react';
+import { Form, Row, Col, Button, Modal } from 'antd';
+import { connect } from 'dva';
+import PropTypes from 'prop-types';
+import FormButtons from './FormButtons.js';
+import consts from '../../config/const.js';
+import GlobalSearchForm from '../../components/GlobalSearchForm/GlobalSearchForm.js';
+import GlobalExportForm from '../../components/GlobalExportForm/GlobalExportForm.js';
+import packageConst from './packageConst.js';
+import VerificationModal from './VerificationModal.js';
+
+function SearchForm({
+  dispatch,
+  formCollapse,
+  form,
+  currency,
+  allPaymentMethod,
+  allVoucherStatus,
+  loading,
+  exportInputs,
+  selectedRowsArr,
+  verificationModalVisible,
+  verificationType,
+  approveDataLoading,
+}) {
+  const formCol = formCollapse ? { md: 8, sm: 24 } : { md: 6, sm: 24 };
+  const collapseFormCol = { md: 8, sm: 24 };
+  const buttonsCol = {
+    type: 'custom',
+    formCol,
+    component: <FormButtons
+      form={form}
+      dispatch={dispatch}
+      formCollapse={formCollapse}
+      loading={loading}
+    />,
+  };
+  const formItemsConfig = [
+    // 第一行
+    [{
+      label: '出库时间',
+      type: 'rangePicker',
+      id: 'deliveryDate',
+      formCol,
+    },
+    {
+      label: '调拨单号',
+      id: 'transferNumber',
+      type: 'text',
+      formCol,
+    },
+    {
+      id: 'transferStatus',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '状态',
+      formCol,
+    }],
+  ];
+  const voucherStatus = [];
+  const voucherStatusObj = allVoucherStatus;
+
+  // 单据状态返回的是json
+  for (const key in voucherStatusObj) {
+    voucherStatus.push({ value: key, text: voucherStatusObj[key] });
+  }
+  const collapseFormItemsConfig = [
+    // 第二行
+    [{
+      label: 'SKU',
+      type: 'text',
+      id: 'sku',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'outWarehouseName',
+      type: 'text',
+      label: '出库仓',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'inWarehouseName',
+      type: 'text',
+      label: '入库仓',
+      formCol: { ...collapseFormCol },
+    }],
+    // 第三行
+    [{
+      id: 'transportMethod',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '运输方式',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'departmentName',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '部门',
+      formCol: { ...collapseFormCol },
+    }, {
+      label: '核销单号',
+      type: 'text',
+      id: 'verifityNumber',
+      formCol: { ...collapseFormCol },
+    }],
+    // 第四行
+    [{
+      label: '柜号',
+      type: 'text',
+      id: 'cabinetNumber',
+      formCol: { ...collapseFormCol },
+    },
+    {
+      id: 'verifityStatus',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '单据状态',
+      formCol: { ...collapseFormCol },
+    }, {
+      label: '单据号',
+      type: 'text',
+      id: 'voucherNumber',
+      formCol: { ...collapseFormCol },
+      placeholder: consts.inputPlaceholder,
+    },
+    ],
+    [{
+      type: 'custom',
+      formCol: { md: 24 },
+      component: <FormButtons
+        form={form}
+        dispatch={dispatch}
+        formCollapse={formCollapse}
+      />,
+    }],
+  ];
+  let formItemsResult = formItemsConfig;
+  // form展开
+  if (!formCollapse) {
+    const formItemsConfigLastNode = formItemsConfig[formItemsConfig.length - 1];
+    formItemsResult = [formItemsConfigLastNode.concat([buttonsCol])];
+  }
+  const toolMarginTop = { marginTop: '20px' };
+  const marmginRight = { marginRight: '10px' };
+  const verifyHandle = () => {
+    dispatch({
+      type: 'overseasTransferDetail/verificationModalReduce',
+      payload: true,
+    });
+  };
+  const genEasData = () => {
+    dispatch({ type: 'common/approveDataLoadingReduce', payload: true });
+    form.validateFields((err, fieldsValue) => {
+      dispatch({
+        type: 'common/commonApproveDataWithcondition',
+        payload: {
+          url: `${consts.domainOverseasTransfer}/api/unfba/non_fba_transfer_order/gen_eas_data`,
+          selectedRowsArr,
+          fieldsValue,
+          dispatch,
+          action: { type: `${packageConst.modelNameSapce}/tableData` },
+        },
+      });
+    });
+  };
+  // 关闭核销modal
+  const cancelModifyModal = () => {
+    dispatch({ type: 'overseasTransferDetail/verificationModalReduce', payload: false });
+  };
+  // 确定按钮
+  const okHandle = () => {
+    let verificationTypeValue = '';
+    if (Array.isArray(verificationType)) {
+      verificationTypeValue = verificationType.join(',');
+    }
+    form.validateFields((err, fieldsValue) => {
+      let merage = {};
+      if (fieldsValue) {
+        merage = Object.assign(fieldsValue, { verifityType: verificationTypeValue });
+      } else {
+        merage = Object.assign({ verifityType: verificationTypeValue });
+      }
+      dispatch({
+        type: 'common/commonApproveDataWithcondition',
+        payload: {
+          url: `${consts.domainOverseasTransfer}/api/unfba/non_fba_transfer_order/gen_verifity_data`,
+          selectedRowsArr,
+          ...merage,
+          dispatch,
+          action: { type: `${packageConst.modelNameSapce}/tableData` },
+        },
+      });
+    });
+  };
+  return (
+    <span>
+      <GlobalSearchForm
+        formItems={formItemsResult}
+        formCollapse={formCollapse}
+        collapseFormItems={collapseFormItemsConfig}
+        dispatch={dispatch}
+        form={form}
+      />
+      <Row>
+        <Col style={toolMarginTop}>
+          <GlobalExportForm
+            url={`${consts.domainOverseasTransfer}/api/unfba/non_fba_transfer_order/export`}
+            form={form}
+            exportInputs={exportInputs}
+            dispatch={dispatch}
+            reduceName={`${packageConst.modelNameSapce}/exportInputsReduce`}
+            buttonType="primary"
+            style={marmginRight}
+          />
+          <Button onClick={verifyHandle} style={marmginRight}>核销</Button>
+          <Button onClick={genEasData} style={marmginRight} loading={approveDataLoading}>审核生成内部调拨</Button>
+        </Col>
+      </Row>
+      <Modal
+        title="选择核销类型(可多选)"
+        visible={verificationModalVisible}
+        onCancel={cancelModifyModal}
+        onOk={okHandle}
+        width={500}
+        destroyOnClose
+      >
+        <VerificationModal />
+      </Modal>
+    </span>
+  );
+}
+SearchForm.propTypes = {
+  currency: PropTypes.array,
+  allPaymentMethod: PropTypes.array,
+  allVoucherStatus: PropTypes.object,
+  exportInputs: PropTypes.object,
+  loading: PropTypes.bool,
+};
+const OverseasTransferDetail = Form.create(consts.formCreateOptions)(SearchForm);
+function mapStateToProps({ common, overseasTransferDetail }) {
+  const { loading, selectedRowsArr, exportInputs, verificationModalVisible, verificationType } = overseasTransferDetail;
+  return { ...common, loading, selectedRowsArr, exportInputs, verificationModalVisible, verificationType };
+}
+export default connect(mapStateToProps)(OverseasTransferDetail);

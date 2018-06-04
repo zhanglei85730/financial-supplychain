@@ -1,0 +1,210 @@
+import * as service from '../services/inventoryRecord.js';
+import { validateFetch } from '../services/common.js';
+import consts from '../config/const.js';
+
+export default {
+  namespace: 'inventoryRecord',
+  state: {
+    formCollapse: false,
+    list: [],
+    loading: true,
+    total: 10,
+    selectedRowKeysArr: [],
+    selectedRowsArr: [],
+    // 导出文件
+    exportInputs: {},
+    // 总计
+    tableDataSum: {},
+    warehouseTypeSelect: {},
+    outboundWarehouseTypeSelect: {},
+    inboundWarehouseTypeSelect: {},
+    approveStatusSelect: {},
+    pushStatusSelect: {},
+    companySelect: {},
+    areaSelect: {},
+  },
+  reducers: {
+    // form收起按钮
+    formCollapseReduce(state, { payload }) {
+      return { ...state, formCollapse: payload };
+    },
+    tableLoadingReduce(state, { payload }) {
+      return { ...state, loading: payload };
+    },
+    // 初始化加载数据
+    query(state, { payload }) {
+      if (!payload || !(payload.hasOwnProperty('rows') && Array.isArray(payload.rows) && payload.rows.length !== 0)) {
+        return { ...state, list: [], total: 0, loading: false };
+      }
+      return { ...state, list: payload.rows, total: payload.total, loading: false };
+    },
+    // 选择的数据行数
+    selectedRowKeys(state, { payload }) {
+      return { ...state, selectedRowKeysArr: payload };
+    },
+    // 选择的数据行
+    selectedRows(state, { payload }) {
+      return { ...state, selectedRowsArr: payload };
+    },
+    // 导出form,动态生成input,用于form提交
+    exportInputsReduce(state, { payload }) {
+      return { ...state, exportInputs: payload };
+    },
+    // 总计
+    tableDataSumReduce(state, { payload }) {
+      return { ...state, tableDataSum: payload };
+    },
+    // //以下请求接口，其他出入库、出入库明细模块公用
+    // 出入库类型
+    warehouseTypeSelectReduce(state, { payload }) {
+      return { ...state, warehouseTypeSelect: payload };
+    },
+    // 出库类型
+    outboundWarehouseTypeSelectReduce(state, { payload }) {
+      return { ...state, outboundWarehouseTypeSelect: payload };
+    },
+    // 入库类型
+    inboundWarehouseTypeSelectReduce(state, { payload }) {
+      return { ...state, inboundWarehouseTypeSelect: payload };
+    },
+    // 审核状态
+    approveStatusSelectReduce(state, { payload }) {
+      return { ...state, approveStatusSelect: payload };
+    },
+    // 推送状态
+    pushStatusSelectReduce(state, { payload }) {
+      return { ...state, pushStatusSelect: payload };
+    },
+    // 推送状态
+    companySelectReduce(state, { payload }) {
+      return { ...state, companySelect: payload };
+    },
+    // 推送状态
+    areaSelectReduce(state, { payload }) {
+      return { ...state, areaSelect: payload };
+    },
+  },
+  effects: {
+    // 查询
+    * tableData({ payload }, { call, put }) {
+      const response = yield call(service.fetchTableData, payload);
+      // 验证数据
+      const requestSuccess = yield call(validateFetch, response);
+      if (!requestSuccess) return false;
+      yield put({
+        type: 'query',
+        payload: requestSuccess.data.data,
+      });
+    },
+    //以下请求接口，其他出入库、出入库明细模块公用
+    // 出入库类型
+    * warehouseTypeSelect({ payload }, { call, put }) {
+      const response = yield call(service.warehouseTypeSelect, payload);
+      // 验证数据
+      const requestSuccess = yield call(validateFetch, response);
+      if (!requestSuccess) return false;
+      yield put({
+        type: 'warehouseTypeSelectReduce',
+        payload: response.data.data,
+      });
+    },
+    // 出库类型
+    * outboundWarehouseTypeSelect({ payload }, { call, put }) {
+      const response = yield call(service.outboundWarehouseTypeSelect, payload);
+      // 验证数据
+      const requestSuccess = yield call(validateFetch, response);
+      if (!requestSuccess) return false;
+      yield put({
+        type: 'outboundWarehouseTypeSelectReduce',
+        payload: response.data.data,
+      });
+    },
+    // 入库类型
+    * inboundWarehouseTypeSelect({ payload }, { call, put }) {
+      const response = yield call(service.inboundWarehouseTypeSelect, payload);
+      // 验证数据
+      const requestSuccess = yield call(validateFetch, response);
+      if (!requestSuccess) return false;
+      yield put({
+        type: 'inboundWarehouseTypeSelectReduce',
+        payload: response.data.data,
+      });
+    },
+    // 审核状态
+    * approveStatusSelect({ payload }, { call, put }) {
+      const response = yield call(service.approveStatusSelect, payload);
+      // 验证数据
+      const requestSuccess = yield call(validateFetch, response);
+      if (!requestSuccess) return false;
+      yield put({
+        type: 'approveStatusSelectReduce',
+        payload: response.data.data,
+      });
+    },
+    // 推送状态
+    * pushStatusSelect({ payload }, { call, put }) {
+      const response = yield call(service.pushStatusSelect, payload);
+      // 验证数据
+      const requestSuccess = yield call(validateFetch, response);
+      if (!requestSuccess) return false;
+      yield put({
+        type: 'pushStatusSelectReduce',
+        payload: response.data.data,
+      });
+    },
+    // 区域select
+    * areaSelect({ payload }, { call, put }) {
+      const response = yield call(service.areaSelect, payload);
+      // 验证数据
+      const requestSuccess = yield call(validateFetch, response);
+      if (!requestSuccess) return false;
+      yield put({
+        type: 'areaSelectReduce',
+        payload: response.data.data,
+      });
+    },
+    // 法人主体
+    * companySelect({ payload }, { call, put }) {
+      const response = yield call(service.companySelect, payload);
+      // 验证数据
+      const requestSuccess = yield call(validateFetch, response);
+      if (!requestSuccess) return false;
+      yield put({
+        type: 'companySelectReduce',
+        payload: response.data.data,
+      });
+    },
+    // 重算
+    * addCalAgainProcess({ payload }, { call, put }) {
+      const response = yield call(service.addCalAgainProcess, payload);
+      // 验证数据
+      const requestSuccess = yield call(validateFetch, response);
+      if (!requestSuccess) return false;
+      yield put({
+        type: 'query',
+        payload: response.data.data,
+      });
+    },
+  },
+  subscriptions: {
+    setup({ dispatch, history }) {
+      // query必须传入
+      return history.listen(({ pathname }) => {
+        if (pathname === '/inventoryRecord' ||
+          pathname === '/otherInventory/outbound' ||
+          pathname === '/otherInventory/outbound' ||
+          pathname === '/salesReturn') {
+          dispatch({ type: 'tableData', payload: { offset: 0, limit: consts.defaultPageSize - consts.extraPageSize } });
+          dispatch({ type: 'warehouseTypeSelect' });
+          dispatch({ type: 'outboundWarehouseTypeSelect' });
+          dispatch({ type: 'inboundWarehouseTypeSelect' });
+          dispatch({ type: 'approveStatusSelect' });
+          dispatch({ type: 'pushStatusSelect' });
+          dispatch({ type: 'companySelect' });
+          dispatch({ type: 'areaSelect' });
+        }
+      });
+    },
+  },
+};
+

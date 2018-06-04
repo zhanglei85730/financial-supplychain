@@ -45,20 +45,16 @@ function SearchForm({
     {
       id: 'departmentNames',
       // 同select属性,可以附加 select的属性
-      type: 'select',
-      label: '部门',
+      type: 'text',
+      label: '账号',
       formCol,
-      data: currency,
     },
     {
       id: 'legalNames',
       // 同select属性,可以附加 select的属性
-      type: 'select',
-      label: '法人',
+      type: 'text',
+      label: '部门',
       formCol,
-      data: allCorporation.map((item, index) => {
-        return { value: item.corporationId, key: index, text: item.corporationName };
-      }),
     }],
   ];
   const voucherStatus = [];
@@ -71,46 +67,49 @@ function SearchForm({
   const collapseFormItemsConfig = [
     // 第二行
     [{
-      id: 'warehouseTypes',
-      // 同select属性,可以附加 select的属性
-      type: 'select',
-      label: '入库类型',
-      formCol: { ...collapseFormCol },
-      data: currency,
-    }, {
-      id: 'upcs',
+      id: 'area',
       // 同select属性,可以附加 select的属性
       type: 'text',
-      label: 'UPC',
+      label: '站点',
       formCol: { ...collapseFormCol },
     }, {
-      id: 'skus',
+      id: 'amazonSku',
       // 同select属性,可以附加 select的属性
       type: 'text',
-      label: 'SKU',
+      label: '原始SKU',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'companySku',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '公司SKU',
       formCol: { ...collapseFormCol },
     }],
     // 第三行
     [{
-      label: '仓库名称',
+      label: '核销单号',
       type: 'text',
-      id: 'storeNames',
+      id: 'verificationId',
       formCol: { ...collapseFormCol },
     }, {
-      label: '单据状态',
-      type: 'select',
-      id: 'pproveStatus',
-      formCol: { ...collapseFormCol },
-      data: voucherStatus,
-    }, {
-      label: '单据号',
+      label: '订单号',
       type: 'text',
-      id: 'documentNumbers',
+      id: 'ebayOrderId',
+      formCol: { ...collapseFormCol },
+    }, {
+      label: '核销状态',
+      type: 'text',
+      id: 'verifyStatus',
       formCol: { ...collapseFormCol },
     }],
     [{
+      label: '单据状态',
+      type: 'text',
+      id: 'documentStatus',
+      formCol: { md: 8 },
+    }, {
       type: 'custom',
-      formCol: { md: 24 },
+      formCol: { md: 16 },
       component: <FormButtons
         form={form}
         dispatch={dispatch}
@@ -125,14 +124,57 @@ function SearchForm({
     formItemsResult = [formItemsConfigLastNode.concat([buttonsCol])];
   }
   const toolMarginTop = { marginTop: '20px' };
-  const approveDataHandle = () => {
-    dispatch({
-      type: 'common/commonApproveData',
-      payload: {
-        selectedRowsArr,
-        paramKey: 'ids',
-        url: `${consts.domainInventory}/inout_bound_detail/approve_data`,
-      },
+  // const approveDataHandle = () => {
+  //   dispatch({
+  //     type: 'common/commonApproveData',
+  //     payload: {
+  //       selectedRowsArr,
+  //       paramKey: 'ids',
+  //       url: `${consts.domainInventory}/inout_bound_detail/approve_data`,
+  //     },
+  //   });
+  // };
+  // 操作
+  const approveDataHandle = (e) => {
+    const target = e.target.id;
+    let url = '';
+    switch (target) {
+      // 审核数据
+      case 'salesVerificationVerify':
+        url = '/api/verifySalesOutbound';
+        break;
+      // 过账
+      case 'salesVerificationAccount':
+        url = '/api/lockSalesSheet';
+        break;
+      // 反审核
+      case 'salesUnVerification':
+        url = '/api/unVerifySalesSheet';
+        break;
+      // 反核销
+      case 'salesVerification':
+        url = '/api/deleteSalesSheet';
+        break;
+      // 审核生成其他出库数据
+      case 'salesVerificationOutbound':
+        url = '/api/initOtherOutbound ';
+        break;
+      // 反审核
+      default:
+        url = false;
+    }
+    form.validateFields((err, fieldsValue) => {
+      dispatch({
+        type: 'common/commonApproveDataWithcondition',
+        payload: {
+          url: `${consts.domainFabStorehouseMaintenance}${url}`,
+          selectedRowsArr,
+          fieldsValue,
+          dispatch,
+          action: { type: `${packageConst.modelNameSapce}/tableData` },
+          // type: 'post',
+        },
+      });
     });
   };
   const marginStyle = { marginLeft: "10px" };
@@ -148,14 +190,18 @@ function SearchForm({
       <Row>
         <Col style={toolMarginTop}>
           <GlobalExportForm
-            url={`${consts.domainInventory}/inbound_detail/lead_out_csv`}
+            url={`${consts.domainFabStorehouseMaintenance}/api/getSalesSheet/export`}
             form={form}
             exportInputs={exportInputs}
             dispatch={dispatch}
             reduceName={`${packageConst.modelNameSapce}/exportInputsReduce`}
             buttonType="primary"
           />
-          <Button style={marginStyle} onClick={approveDataHandle}>审核数据</Button>
+          <Button style={marginStyle} onClick={approveDataHandle} id="salesVerificationVerify">审核</Button>
+          <Button style={marginStyle} onClick={approveDataHandle} id="salesVerificationAccount">过账</Button>
+          <Button style={marginStyle} onClick={approveDataHandle} id="salesUnVerification">反审核</Button>
+          <Button style={marginStyle} onClick={approveDataHandle} id="salesVerificationVerify">反核销</Button>
+          <Button style={marginStyle} onClick={approveDataHandle} id="salesVerificationOutbound">审核生成其他出库数据</Button>
         </Col>
       </Row>
     </span>

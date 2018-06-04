@@ -1,0 +1,277 @@
+import React from 'react';
+import { Form, Row, Col, Button } from 'antd';
+import PropTypes from 'prop-types';
+import { connect } from 'dva';
+import FormButtons from './FormButtons.js';
+import consts from '../../config/const.js';
+import GlobalSearchForm from '../../components/GlobalSearchForm/GlobalSearchForm.js';
+import PushEasModal from '../../components/PushEasModal/PushEasModal.js';
+import GlobalExportForm from '../../components/GlobalExportForm/GlobalExportForm.js';
+import PushEas from '../../components/PushEas/PushEas.js';
+import AllSupplier from '../../components/AllSupplier/AllSupplier.js';
+import packageConst from './packageConst.js';
+import { jsonToSelectOptions } from '../../utils/util.js';
+
+function SearchForm({
+  dispatch,
+  formCollapse,
+  form,
+  allOrg,
+  currency,
+  allCorporation,
+  allPaymentMethod,
+  allVoucherStatus,
+  supplierModalVisibile,
+  supplierList,
+  supplierSearchList,
+  supplierTableLoading,
+  supplierSelect,
+  loading,
+  pushEasResponse,
+  selectedRowsArr,
+  exportInputs,
+  globalPagationParam,
+  commonPaginnation,
+  warehouseTypeSelect,
+  outboundWarehouseTypeSelect,
+  inboundWarehouseTypeSelect,
+  approveStatusSelect,
+  pushStatusSelect,
+  companySelect,
+  areaSelect,
+   }) {
+  const formCol = formCollapse ? { md: 8, sm: 24 } : { md: 6, sm: 24 };
+  const collapseFormCol = { md: 8, sm: 24 };
+  const buttonsCol = {
+    type: 'custom',
+    formCol,
+    component: <FormButtons
+      form={form}
+      dispatch={dispatch}
+      formCollapse={formCollapse}
+      loading={loading}
+    />,
+  };
+  const formItemsConfig = [
+    // 第一行
+    [{
+      label: '退货日期',
+      type: 'rangePicker',
+      id: 'returnDate',
+      formCol,
+    },
+    {
+      label: '部门',
+      id: 'departments',
+      type: 'text',
+      formCol,
+    },
+    {
+      label: 'upc',
+      id: 'upcs',
+      type: 'text',
+      formCol,
+    }],
+  ];
+  const voucherStatus = [];
+  const voucherStatusObj = allVoucherStatus;
+
+  // 单据状态返回的是json
+  for (const key in voucherStatusObj) {
+    voucherStatus.push({ value: key, text: voucherStatusObj[key] });
+  }
+  const collapseFormItemsConfig = [
+    // 第二行
+    [{
+      label: 'fnsku',
+      type: 'text',
+      id: 'fnskus',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'pushStatus',
+      // 同select属性,可以附加 select的属性
+      type: 'select',
+      label: '推送状态',
+      formCol: { ...collapseFormCol },
+      data: jsonToSelectOptions(pushStatusSelect),
+    }, {
+      id: 'accountNames',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '账号',
+      formCol: { ...collapseFormCol },
+    }],
+    // 第三行
+    [{
+      label: '法人主体',
+      type: 'select',
+      id: 'legalEntitys',
+      formCol: { ...collapseFormCol },
+      data: jsonToSelectOptions(companySelect),
+    }, {
+      label: '成本中心',
+      type: 'text',
+      id: 'costCenters',
+      formCol: { ...collapseFormCol },
+    }, {
+      label: '订单号',
+      type: 'text',
+      id: 'orderIds',
+      formCol: { ...collapseFormCol },
+    }],
+    // 第四行
+    [{
+      label: '大区',
+      type: 'select',
+      id: 'areas',
+      formCol: { ...collapseFormCol },
+      data: jsonToSelectOptions(areaSelect),
+    }, {
+      label: '仓库',
+      type: 'text',
+      id: 'storeNames',
+      formCol: { ...collapseFormCol },
+    }, {
+      id: 'amazonSkus',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '亚马逊SKU',
+      formCol: { ...collapseFormCol },
+    },
+    ],
+    [{
+      id: 'documentNumbers',
+      // 同select属性,可以附加 select的属性
+      type: 'text',
+      label: '单据编号',
+      formCol: { md: 8 },
+    }, {
+      type: 'custom',
+      formCol: { md: 16 },
+      component: <FormButtons
+        form={form}
+        dispatch={dispatch}
+        formCollapse={formCollapse}
+      />,
+    }],
+  ];
+  let formItemsResult = formItemsConfig;
+  // form展开
+  if (!formCollapse) {
+    const formItemsConfigLastNode = formItemsConfig[formItemsConfig.length - 1];
+    formItemsResult = [formItemsConfigLastNode.concat([buttonsCol])];
+  }
+  const toolMarginTop = { marginTop: '20px' };
+  const marmginRight = { marginRight: '10px' };
+  // 重算
+  const addCalAgainProcess = () => {
+    form.validateFields((err, fieldsValue) => {
+      dispatch({
+        type: 'common/commonApproveDataWithcondition',
+        payload: {
+          url: `${consts.domainInventory}/fba_fulfillment_return_data/add_cal_again_process`,
+          selectedRowsArr,
+          fieldsValue,
+          dispatch,
+          action: { type: `${packageConst.domainInventory}/tableData` },
+          paramKey: 'ids',
+        },
+      });
+    });
+  };
+  return (
+    <span>
+      <GlobalSearchForm
+        formItems={formItemsResult}
+        formCollapse={formCollapse}
+        collapseFormItems={collapseFormItemsConfig}
+        dispatch={dispatch}
+        form={form}
+      />
+      <Row>
+        <Col style={toolMarginTop}>
+          <PushEas
+            buttonText="推送到金蝶"
+            dispatch={dispatch}
+            modalShowReduce="common/pushEasModalRedece"
+            pushReduce="common/pushEas"
+            form={form}
+            moduleModelNameSapce={`${packageConst.modelNameSapce}`}
+            modelNameSapce="common"
+            selectedRowsArr={selectedRowsArr}
+            pushEasResponse={pushEasResponse}
+            buttonType="primary"
+            wsUrl={`${consts.wsUrl3}/socket`}
+            style={marmginRight}
+            pushEasUrl={`${consts.domainInventory}/fba_fulfillment_return_data/push_eas`}
+          />
+          <GlobalExportForm
+            url={`${consts.domainInventory}/fba_fulfillment_return_data/lead_out_csv`}
+            form={form}
+            dispatch={dispatch}
+            reduceName={`${consts.domainInventory}/exportInputsReduce`}
+            exportInputs={exportInputs}
+            style={marmginRight}
+          />
+          <Button style={marmginRight} onClick={addCalAgainProcess}>重算</Button>
+        </Col>
+      </Row>
+      {/* 所有供应商 */}
+      <AllSupplier
+        isVisibile={supplierModalVisibile}
+        dispatch={dispatch}
+        supplierList={supplierList}
+        form={form}
+        supplierSearchList={supplierSearchList}
+        supplierTableLoading={supplierTableLoading}
+        supplierSelect={supplierSelect}
+      />
+      <PushEasModal
+        dispatch={dispatch}
+        refreshTableRedece={`${packageConst.modelNameSapce}/tableData`}
+        globalPagationParam={globalPagationParam}
+      />
+    </span>
+  );
+}
+SearchForm.PropTypes = {
+  allOrg: PropTypes.array,
+  currency: PropTypes.array,
+  allCorporation: PropTypes.array,
+  allPaymentMethod: PropTypes.array,
+  allVoucherStatus: PropTypes.object,
+  supplierModalVisibile: PropTypes.bool,
+  supplierTableLoading: PropTypes.bool,
+  globalPagationParam: PropTypes.object,
+  exportInputs: PropTypes.object,
+  selectedRowsArr: PropTypes.array,
+  loading: PropTypes.bool,
+};
+const SearchFormWrapped = Form.create(consts.formCreateOptions)(SearchForm);
+function mapStateToProps({ common, salesReturn, inventoryRecord }) {
+  const {
+    warehouseTypeSelect,
+    outboundWarehouseTypeSelect,
+    inboundWarehouseTypeSelect,
+    approveStatusSelect,
+    pushStatusSelect,
+    companySelect,
+    areaSelect,
+  } = inventoryRecord;
+  const { loading, selectedRowsArr, exportInputs } = salesReturn;
+
+  return {
+    ...common,
+    loading,
+    selectedRowsArr,
+    exportInputs,
+    warehouseTypeSelect,
+    outboundWarehouseTypeSelect,
+    inboundWarehouseTypeSelect,
+    approveStatusSelect,
+    pushStatusSelect,
+    companySelect,
+    areaSelect,
+  };
+}
+export default connect(mapStateToProps)(SearchFormWrapped);

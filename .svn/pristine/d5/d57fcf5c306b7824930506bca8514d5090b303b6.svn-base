@@ -14,50 +14,111 @@ function DataTable({
   total,
   queryParams,
 }) {
-  const tdWidth = { width: 80 };
+  const tdWidth = { width: 160 };
   const columns = [
     {
-      title: 'E登仓库名称',
+      title: '法人主体',
+      key: 'corporateName',
+      dataIndex: 'corporateName',
+      width: 160,
+      // fixed: 'left',
+    }, {
+      title: '部门',
+      key: 'deptment',
+      dataIndex: 'deptment',
+      width: 150,
+      // fixed: 'left',
+      render: (value, row, index) => {
+        const obj = {
+          children: value,
+          props: {},
+        };
+        if (row.hasOwnProperty('rowSpan')) {
+          obj.props.rowSpan = row.rowSpan;
+        }
+        return obj;
+      },
+    },
+    {
+      title: '成本中心',
+      key: 'costCenter',
+      dataIndex: 'costCenter',
+      width: 150,
+    }, {
+      title: '销毁日期',
+      key: 'destoryDate',
+      dataIndex: 'destoryDate',
+      width: 200,
+    },
+    {
+      title: '账号',
+      key: 'account',
+      dataIndex: 'account',
+      width: 160,
+    },
+    {
+      title: '销毁单号',
+      key: 'destroyOrderSn',
+      dataIndex: 'destroyOrderSn',
+      width: 160,
+    }, {
+      title: '站点',
+      key: 'siteName',
+      dataIndex: 'siteName',
+      width: 160,
+    }, {
+      title: '仓库',
       key: 'warehouseName',
       dataIndex: 'warehouseName',
       width: 160,
-    }, {
-      title: 'E登仓库ID',
-      key: 'warehouseId',
-      dataIndex: 'warehouseId',
-      width: 150,
+      render: decimalTo4,
     },
     {
-      title: '金蝶仓库名称',
-      key: 'kisWarehouseName',
-      dataIndex: 'kisWarehouseName',
-      width: 150,
-    }, {
-      title: '金蝶仓库ID',
-      key: 'kisWarehouseId',
-      dataIndex: 'kisWarehouseId',
-      width: 150,
-    }, {
-      title: '创建人',
-      key: 'creator',
-      dataIndex: 'creator',
-      width: 150,
-    }, {
-      title: '创建时间',
-      key: 'creatorTime',
-      dataIndex: 'creatorTime',
-      width: 150,
+      title: '订单id',
+      key: 'orderId',
+      dataIndex: 'orderId',
+      ...tdWidth,
     },
     {
-      title: '更新人',
-      key: 'updater',
-      dataIndex: 'updater',
+      title: 'FNSKU',
+      key: 'fnsku',
+      dataIndex: 'fnsku',
+      width: 130,
+    }, {
+      title: 'SKU',
+      key: 'amazonSku',
+      dataIndex: 'amazonSku',
       width: 150,
     }, {
-      title: '更新日期',
-      key: 'updaterTime',
-      dataIndex: 'updaterTime',
-      width: 150,
+      title: 'UPC',
+      key: 'upc',
+      dataIndex: 'upc',
+      width: 110,
+    }, {
+      title: '数量',
+      key: 'disposedQuantity',
+      dataIndex: 'disposedQuantity',
+      width: 130,
+    }, {
+      title: '审核状态',
+      key: 'invoiceStatus',
+      dataIndex: 'invoiceStatus',
+      width: 130,
+      render: (value = '') => {
+        let result = '';
+        switch (value) {
+          case 0:
+            result = '未推送';
+            break;
+          case 1:
+            result = '已推送';
+            break;
+          default:
+            result = value;
+            break;
+        }
+        return result;
+      },
     }];
 
 
@@ -77,6 +138,7 @@ function DataTable({
     changePagination(page, pageSize, dispatch, `${packageConst.modelNameSapce}`, queryParams);
   };
   const pageSizeChangeHandle = (current, size) => {
+    // dispatch({ type: `${packageConst.modelNameSapce}/tableData`, payload: { offset: 0, limit: size } });
     changePagination(current, size, dispatch, `${packageConst.modelNameSapce}`, queryParams);
   };
   return (
@@ -90,7 +152,7 @@ function DataTable({
         loading={loading}
         className="nestedTable"
         style={{ marginTop: '20px' }}
-        scroll={Object.assign(consts.globalTableScroll, { x: 2000 })}
+        scroll={Object.assign(consts.globalTableScroll, { x: 2400 })}
         pagination={{
           total,
           defaultPageSize: consts.defaultPageSize,

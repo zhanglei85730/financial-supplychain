@@ -1,0 +1,486 @@
+import { message } from 'antd';
+import consts from '../config/const.js';
+
+export function getSearchParams(param) {
+  // const window = window;
+  // const searchStr = decodeURIComponent('code=qy01d0d4c61e209d0128f86c3585&username=%E4%BC%8A%E5%85%83%E8%BE%89');
+  // const searchStr = decodeURIComponent('JSESSIONID=92d7ddd2a010c59511dc2905b7e14f64&random_stamp=fjB6N2&sign=a5b1a2d41a0c896eebbbf6c6126d7a6a&username=songwangting@aukeys.com');
+  const searchStr = decodeURIComponent(window.location.search.slice(1));
+  if (!searchStr) return false;
+  const arr1 = searchStr.split('&');
+  const result = Object.create({});
+  arr1.forEach((item) => {
+    const arr2 = item.split('=');
+    result[arr2[0]] = arr2[1];
+  });
+  if (param) {
+    return Object.keys(result).indexOf(param) >= 0 ? result[param] : false;
+  } else {
+    return result;
+  }
+}
+/**
+ * @description 将选择的table行数据json根据key映射到form配置参数的defaultValue，主要用于table的修改
+ * @type none
+ * @author zhanglei
+ * @param {array} selectedRow -选择的table行数据
+ * @param {array} formItemsConfig -配置searchForm数据（二维数组）
+*/
+export function mapSelectedRowToForm(selectedRow, formItemsConfig) {
+  Object.keys(selectedRow).forEach((field) => {
+    formItemsConfig.forEach((outItem) => {
+      outItem.forEach((innerItem) => {
+        if (innerItem.id === field) {
+          innerItem.defaultValue = selectedRow[field];
+        }
+      });
+    });
+  });
+}
+/**
+ * @param  {object} json 传递的键值对{name:'test'}
+ */
+export function getPostOptions(json) {
+  const formData = new FormData();
+  for (const item in json) {
+    formData.append(item, json[item]);
+  }
+  const opts = {
+    method: 'post',
+    body: formData,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    mode: 'cors',
+  };
+  return opts;
+}
+
+// 格式化json为params
+export function params(json) {
+  let paramsString = '';
+  for (const k in json) {
+    if (Object.keys(json).indexOf(k) >= 0) {
+      paramsString += `${k}=${json[k]}&`;
+    }
+  }
+  return paramsString.slice(0, -1);
+}
+
+// 获取code
+export function getLoginInfo() {
+  const token = window.sessionStorage.getItem('code');
+  const username = window.sessionStorage.getItem('username');
+  const loginInfo = {};
+  if (token) {
+    loginInfo.token = token;
+  } else {
+    return false;
+  }
+  if (username) {
+    loginInfo.username = username;
+  }
+  return loginInfo;
+}
+
+// 检测对象是否有属性
+export function hasProperty(obj, property) {
+  // if (Object.keys(obj).includes('a') >= 0) {
+  //   return true;
+  // } else {
+  //   return false;
+  // }
+  return Object.keys(obj).includes(property);
+}
+/*
+ * 从地址栏返回认证信息
+*/
+export function getSecurityHeaderFromUrl() {
+  // 解析url参数
+  const searchObj = getSearchParams();
+  // 无JSESSIONID直接退出
+  if (Object.keys(searchObj).indexOf('JSESSIONID') < 0) {
+    return false;
+  }
+  const securityHeader = {
+    security_api_username: searchObj.username,
+    security_api_password: searchObj.JSESSIONID,
+    security_api_type: 'Y',
+  };
+  // 存储到认证信息及用户名到sessionStorage
+  const securityHeaderString = JSON.stringify(securityHeader);
+  window.sessionStorage.setItem('authorized', securityHeaderString);
+  if (hasProperty(securityHeader, 'security_api_username') >= 0) {
+    window.sessionStorage.setItem('username', securityHeader.security_api_username);
+  }
+  const opts = {
+    headers: {
+      'security-header': securityHeaderString,
+    },
+  };
+  return opts;
+}
+/** 
+ * 从本地获取认证信息
+*/
+export function getSecurityHeaderFormLocal() {
+  return new Promise((resolve) => {
+    const authorized = window.sessionStorage.getItem('authorized');
+    if (authorized !== null) {
+      const opts = {
+        method: 'get',
+        headers: {
+          'security-header': window.sessionStorage.getItem('authorized'),
+        },
+      };
+      resolve(opts);
+    } else {
+      // window.location.href = consts.loginUrl;
+      //reject(false);
+    }
+  });
+}
+export function getToken() {
+  const token = window.sessionStorage.getItem('authorized');
+  if (token !== undefined) {
+    return { 'security-header': token };
+  }
+}
+// 判断json
+export function isJSON(target) {
+  return typeof target === 'object' && target.constructor === Object;
+}
+//antd table 自动合并相同内容行(同一个字段),
+export function rowColFormatData(dataSource, fieldName) {
+  for (let i = 0; i < dataSource.length; i++) {
+    if (i === 0) continue;
+    //  上行无rowSpan属性，本行应与上行合并的情况
+    if (!dataSource[i - 1].hasOwnProperty('rowSpan') && dataSource[i - 1][fieldName] === dataSource[i][fieldName]) {
+      dataSource[i - 1].rowSpan = 2;
+      dataSource[i].rowSpan = 0;
+    }
+    //  本行应与上行合并的情况，上行已合并有rowSpan属性而且为0
+    if (dataSource[i - 1][fieldName] === dataSource[i][fieldName] && dataSource[i - 1].hasOwnProperty('rowSpan') && dataSource[i - 1].rowSpan === 0) {
+      dataSource[i].rowSpan = 0;
+      let index = i;
+      while (index > 0) {
+        if (dataSource[index].hasOwnProperty('rowSpan') && dataSource[index].rowSpan !== 0) {
+          dataSource[index].rowSpan++;
+        }
+        index--;
+      }
+    }
+  }
+  return dataSource;
+}
+// table当前页计算总数,返回添加合计后的rows,要在哪个feild添加总计行title,sumRowTitle为要设置的title名
+export function sumFields(rows, sumRowField, sumRowTitle) {
+  const exceptFields = ['taxRate', 'exchangeRate', 'rate'];
+  const sumField = Object.assign({}, rows[0]);
+  const fields = [];
+  // 清空复制过来的总计行属性值
+  for (const key in sumField) {
+    if (typeof (sumField[key]) === 'number' && !exceptFields.includes(key)) {
+      sumField[key] = 0;
+      fields.push(key);
+    } else {
+      sumField[key] = '';
+    }
+  }
+  rows.forEach((item) => {
+    item.key = Math.random() * 100;
+    fields.forEach((field) => {
+      if (hasProperty(item, field) && field !== 'id') {
+        sumField[field] += item[field];
+      }
+    });
+  });
+  if (hasProperty(sumField, sumRowField)) {
+    sumField[sumRowField] = sumRowTitle;
+    sumField.id = Math.random();
+  }
+  const result = rows.concat([sumField]);
+  return result;
+}
+// 清空Json为空值的属性,用于查询提交查询参数
+export function deleteJsonEmptyProps(json) {
+  const newJson = Object.assign({});
+  for (const key in json) {
+    if (json[key] !== undefined && json[key] !== '') {
+      newJson[key] = json[key];
+    }
+  }
+  return newJson;
+}
+// json to antd ui'sselect options
+export function jsonToSelectOptions(obj) {
+  const arr = [];
+  for (const key in obj) {
+    if (hasProperty(obj, key)) {
+      arr.push({ value: key, text: obj[key] });
+    }
+  }
+  return arr;
+}
+// table分页点击事件
+export function changePagination(page, pageSize, dispatch, modleNameSpace, params) {
+  // overLimit为超出请求当前分页里的行数，如当前页需要合计及所有合计overLimit为2
+  const overLimit = consts.extraPageSize;
+  let pagationParam = {};
+  if (page > 1) {
+    pagationParam = { offset: (page - 1) * (pageSize - overLimit), limit: pageSize - overLimit };
+  } else {
+    pagationParam = { offset: (page - 1), limit: pageSize - overLimit };
+  }
+  const queryParams = Object.assign(params, pagationParam);
+  // 保存翻页参数，刷新时候记住翻页参数
+  dispatch({ type: 'common/setCommonPaginnation', payload: pagationParam });
+  dispatch({ type: `${modleNameSpace}/tableData`, payload: queryParams });
+  dispatch({ type: `${modleNameSpace}/tableLoadingReduce`, payload: true });
+  // 保存查询条件用于刷新table数据（包含当前页码参数）
+  dispatch({ type: 'common/globalPagationParamRedece', payload: queryParams });
+}
+// 数字字段保留4位小数
+export function decimalTo4(value, row, index) {
+  if (!value) return value;
+  if (value !== '') {
+    return `${fillDigit(decimal(value, 4, true), 4)}`;
+  } else {
+    return '-';
+  }
+}
+//数据字段保留2位小数
+export function decimalTo2(value) {
+  if (!value) {
+    if (value !== 0) {
+      return value;
+    }
+  }
+  const result = decimal(value, 2, false);
+  //用千分位隔开
+  const thousandSeparator = thousandSeparatorFormater(result);
+  // return `${fillDigit(thousandSeparator, 2)},原值：${value}`;
+  return `${fillDigit(thousandSeparator, 2)}`;
+}
+// 小数位数不足位数补0
+export function fillDigit(numStr, digit) {
+  const operateStr = numStr + '';
+  const pointPosition = operateStr.indexOf('.');
+  let afterPoint = 0;
+  let str0 = '';
+  if (pointPosition >= 0) {
+    afterPoint = operateStr.slice(pointPosition + 1).length;
+    if (afterPoint < digit) {
+      for (let i = afterPoint; i < digit; i++) {
+        str0 += '0';
+      }
+      return `${operateStr}${str0}`;
+    } else {
+      return numStr;
+    }
+  } else {
+    for (let k = 0; k < digit; k++) {
+      str0 += '0';
+    }
+    // 无小数补00
+    return `${operateStr}.${str0}`;
+  }
+}
+// 保留N为小数
+export function decimal(num, v, isRound) {
+  if (typeof (num) === 'undefined' || num === null || num === 'undefined') {
+    return "";
+  }
+  //如果为NaN直接返回num
+  if (isNaN(num)) {
+    return num;
+  }
+  if (typeof (num) === 'string') {
+    let num = Number(num);
+  }
+  const vv = Math.pow(10, v);
+  //是否四舍五入
+  if (isRound) {
+    const pointPosition = (num + '').indexOf('.');
+    // 是否为小数
+    if (pointPosition != -1) {
+      const fixStr = (num + '').slice(pointPosition);
+      // 是否大于指定小数位数
+      if (fixStr.length >= v) {
+        return (num + '').substring(0, pointPosition + v + 1)
+      } else {
+        return (Math.round(num * vv) / vv).toFixed(v);
+      }
+    } else {
+      // return (Math.round(num * vv) / vv).toFixed(v);
+      // 如果不是小数直接返回
+      return num;
+    }
+  } else {
+    return (Math.round(num * vv) / vv).toFixed(v);
+  }
+}
+// 数字用千分位隔开
+export function thousandSeparatorFormater(value, row, index) {
+  let n = value;
+  let isNegativeNumber = false;
+  // 如果为NaN直接返回value
+  if (value == null) {
+    return;
+  }
+  if (isNaN(value)) {
+    return value;
+  }
+  // 如果字符串转换为number
+  if (typeof (value) === 'string') {
+    n = Number(value);
+  }
+  if (n < 0) {
+    isNegativeNumber = true;
+    n = Math.abs(n);
+  }
+  if (typeof n !== 'string') {
+    n = n.toString();
+  }
+  const re = /\d{1,3}(?=(\d{3})+$)/g;
+  let n1 = n.replace(/^(\d+)((\.\d+)?)$/, (s, s1, s2) => { return s1.replace(re, '$&,') + s2; });
+  // 如果为负数要增加负数符号
+  if (isNegativeNumber) {
+    n1 = `-${n1}`;
+  }
+  return n1;
+}
+// table 字段红色字
+export function renderFontColor(value, row, index) {
+  const color = { color: '#ff4d4f' };
+  return <span style={color}>{decimalTo2(value, row, index)}</span>;
+}
+// table列格式化,税率（红色、保留4位小数）
+export function taxRateFormater(value, row, index, isRedColor) {
+  // 红色字、保留2位小数  
+  if (consts.isSumFields(row)) {
+    return '';
+  }
+  let color = {};
+  if (isRedColor) {
+    color = { color: consts.colorRed };
+  }
+  if (value === null || value === undefined) {
+    return <span style={color}></span>;
+  }
+  return <span style={color}>{`${decimalTo2(value * 100)}%`}</span>;
+}
+// 遍历menu配置 返回与当前pathname对应的菜单项
+export function iteratorMenu(menu, pathName) {
+  let node = undefined;
+  function iterator(arr) {
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i].path === pathName) {
+        node = arr[i];
+        break;
+      } else {
+        if (arr[i].hasOwnProperty('children')) {
+          iterator(arr[i].children);
+        }
+      }
+    }
+  }
+  iterator(menu);
+  return node;
+}
+// from日期转时间 返回json
+export function momentDateRangeToDate(fieldsValue, dateField, startDate, endDate) {
+  if (hasProperty(fieldsValue, dateField) &&
+    Array.isArray(fieldsValue[dateField]) &&
+    fieldsValue[dateField].length > 1) {
+    // return { [startDate]: `${fieldsValue[dateField][0].format(`YYYY-MM-DD 00:00:00`)},${fieldsValue[dateField][1].format('YYYY-MM-DD 23:59:59')}` };
+    return { [startDate]: `${fieldsValue[dateField][0].format('YYYY-MM-DD 00:00:00')}`, [endDate]: `${fieldsValue[dateField][1].format('YYYY-MM-DD 23:59:59')}` };
+  } else {
+    return {};
+  }
+}
+// 将input输入多个查询条件（，隔开）转换为JSON
+export function stringParamsToArray(fieldsValue, field) {
+  if (hasProperty(fieldsValue, field) &&
+    fieldsValue[field] &&
+    typeof (field) === 'string') {
+    return { [field]: fieldsValue[field].split(',') };
+  } else {
+    return {};
+  }
+}
+// form参数格式化,多个条件用,隔开如：“a,b”
+export function formParamsFormater(fieldsValue, isFormatDate, startFromatDate = 'YYYY-MM-DD 00:00:00', endFromatDate = 'YYYY-MM-DD 00:00:00') {
+  if (typeof (fieldsValue) !== 'object') {
+    return {};
+  }
+  const formatDate = isFormatDate === undefined ? true : false;
+  const params = {};
+  for (const key in fieldsValue) {
+    if (fieldsValue[key] !== undefined && fieldsValue[key] !== '' && fieldsValue[key] !== null) {
+      // 格式化数据
+      if (formatDate) {
+        // 如果为数数组
+        if (Array.isArray(fieldsValue[key])) {
+          //
+          // 时间范围  Moment对象
+          if (fieldsValue[key].length === 2 &&
+            fieldsValue[key][0].hasOwnProperty('_isAMomentObject') &&
+            fieldsValue[key][0]['_isAMomentObject']) {
+            params[key] = `${fieldsValue[key][0].format(`${startFromatDate}`)},${fieldsValue[key][1].format(`${endFromatDate}`)}`;
+            // 日期 非时间段 多选select
+          } else {
+            try {
+              // 去除首尾空白
+              params[key] = fieldsValue[key].join(',').match(/[^\s]+.*[^\s]+/)[0];
+            } catch (e) {
+              params[key] = fieldsValue[key].join(',');
+            }
+          }
+          // 非数组
+        } else {
+          // moment对象
+          if (fieldsValue[key].hasOwnProperty('_isAMomentObject') && fieldsValue[key]['_isAMomentObject']) {
+            params[key] = `${fieldsValue[key].format(`${startFromatDate}`)}`;
+          } else {
+            try {
+              // 去除首尾空白
+              params[key] = fieldsValue[key].match(/[^\s]+.*[^\s]+/)[0];
+            } catch (e) {
+              params[key] = fieldsValue[key];
+            }
+          }
+        }
+      } else {
+        try {
+          params[key] = typeof (fieldsValue[key]) === 'string' ? fieldsValue[key].match(/[^\s]+.*[^\s]+/)[0] : fieldsValue[key];
+        } catch (e) {
+          params[key] = fieldsValue[key];
+        }
+      }
+    }
+  }
+  return params;
+}
+// 将数组转化为antd select options
+export function arrayToSelectOptions(arr) {
+  let data = [];
+  if (Array.isArray(arr) && arr.length > 0) {
+    data = arr.map((item, index) => {
+      return { value: item, key: index, text: item };
+    });
+  }
+  return data;
+}
+// // 审核数据
+export function commonAuditData(form, dispatch, reduce) {
+  form.validateFields((err, fieldsValue) => {
+    const formparams = formParamsFormater(fieldsValue);
+    if (Object.keys(formparams).length > 0) {
+      dispatch({ type: reduce, payload: formParamsFormater(formparams) });
+    } else {
+      message.error('请选择要审核的条件');
+    }
+  });
+}

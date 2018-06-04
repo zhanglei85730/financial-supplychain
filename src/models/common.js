@@ -13,7 +13,7 @@ export default {
       },
     ],
     // 刷新时的的查询条件,
-    commonQueryCondition: {},
+    // commonQueryCondition: {},
     // 刷新时的翻页参数
     commonPaginnation: { offset: 0, limit: consts.defaultPageSize - consts.extraPageSize },
     // 供应商loading
@@ -39,7 +39,7 @@ export default {
     // 供应商
     supplierList: { rows: [], total: 0 },
     supplierSelect: {},
-    // 查询参数
+    // 刷新时保存的上次查询条件
     queryParams: {},
     // 普通入库类型下拉selct
     allReceiptType: {},
@@ -77,11 +77,11 @@ export default {
   },
   reducers: {
     // 审核按钮状态
-    setQueryParams(state, { payload }) {
-      const { commonQueryCondition } = state;
-      const newCommonQueryCondition = Object.assign({}, commonQueryCondition, payload);
-      return { ...state, commonQueryCondition: newCommonQueryCondition };
-    },
+    // setQueryParams(state, { payload }) {
+    //   const { commonQueryCondition } = state;
+    //   const newCommonQueryCondition = Object.assign({}, commonQueryCondition, payload);
+    //   return { ...state, commonQueryCondition: newCommonQueryCondition };
+    // },
     setCommonPaginnation(state, { payload = { offset: 0, limit: consts.defaultPageSize - consts.extraPageSize } }) {
       return { ...state, commonPaginnation: payload };
     },
@@ -381,11 +381,11 @@ export default {
         }
         message.success(sucdessMessage);
         // 刷新表格数据，从全局获取查询条件及翻页参数
-        const { commonQueryCondition, commonPaginnation } = yield select(state => state.common);
+        const { queryParams, commonPaginnation } = yield select(state => state.common);
         if (refreshTableReduce) {
           yield put({
             type: refreshTableReduce,
-            payload: Object.assign(commonPaginnation, commonQueryCondition),
+            payload: Object.assign(commonPaginnation, queryParams),
           });
         }
       } else {
@@ -397,7 +397,7 @@ export default {
     },
     //  审核数据(可以勾选及携带查询提交,同时存在只提交勾选数据，忽略查询条件)
     *commonApproveDataWithcondition({ payload }, { call, put }) {
-      const { url, type, selectedRowsArr, fieldsValue, dispatch, action, paramKey = 'id' } = payload;
+      const { url, type, selectedRowsArr, fieldsValue, dispatch, action, paramKey = 'id', ...rest } = payload;
       let formParams = '';
       const idsArr = [];
       if (Array.isArray(selectedRowsArr) && selectedRowsArr.length > 0) {
@@ -410,14 +410,16 @@ export default {
       } else {
         formParams = formParamsFormater(fieldsValue);
       }
-      const result = { url, type, ...formParams };
+      const result = { url, type, ...formParams, ...rest };
       // 审核状态按钮加载中     
-      const { data = false } = yield call(service.commonApproveDataWithcondition, result);
+      const { data = false, success = false } = yield call(service.commonApproveDataWithcondition, result);
       dispatch({ type: 'common/approveDataLoadingReduce', payload: false });
       let isHaveErrorInfo = false;
+      // 刷新表格      
       if (data) {
         if (data.hasOwnProperty('success') && data.success === true) {
           message.success('操作成功');
+
         } else {
           if (data.hasOwnProperty('error') && data.error.hasOwnProperty('message')) {
             message.error(data.error.message);
