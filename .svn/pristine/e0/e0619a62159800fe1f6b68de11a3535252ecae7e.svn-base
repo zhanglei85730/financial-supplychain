@@ -236,8 +236,6 @@ function SearchForm({
             dispatch={dispatch}
             reduceName={`${packageConst.modelNameSapce}/exportInputsReduce`}
             buttonType="primary"
-            customDateFamat={{ transferPeriod: 'YYYYMM' }}
-
           />
           <Button style={toolMarginLeft} onClick={auditHandle} loading={approveDataLoading}>审核生成数据</Button>
           <Upload

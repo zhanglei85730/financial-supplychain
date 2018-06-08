@@ -96,7 +96,7 @@ function SearchForm({
     }, {
       label: 'shipmentID',
       type: 'text',
-      id: 'voucherNumber',
+      id: 'shipmentId',
       formCol: { ...collapseFormCol },
     }, {
       label: 'FNSKU',

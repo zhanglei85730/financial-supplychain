@@ -1,14 +1,15 @@
 import React from 'react';
-import { Form, Row, Col } from 'antd';
-import PropTypes from 'prop-types';
+import { Form, Row, Col, Button } from 'antd';
 import { connect } from 'dva';
+import PropTypes from 'prop-types';
+import { jsonToSelectOptions, arrayToSelectOptions } from '../../utils/util.js';
 import FormButtons from './FormButtons.js';
-import consts from '../../config/const.js';
 import GlobalSearchForm from '../../components/GlobalSearchForm/GlobalSearchForm.js';
-import PushEasModal from '../../components/PushEasModal/PushEasModal.js';
 import GlobalExportForm from '../../components/GlobalExportForm/GlobalExportForm.js';
 import PushEas from '../../components/PushEas/PushEas.js';
 import AllSupplier from '../../components/AllSupplier/AllSupplier.js';
+import PushEasModal from '../../components/PushEasModal/PushEasModal.js';
+import consts from '../../config/const.js';
 import packageConst from './packageConst.js';
 
 function SearchForm({
@@ -30,8 +31,11 @@ function SearchForm({
   selectedRowsArr,
   exportInputs,
   globalPagationParam,
-  commonPaginnation,
-   }) {
+  allFundsPayment,
+  departNameIn,
+  warehouseNameIn,
+  warehouseNameOut,
+  }) {
   const formCol = formCollapse ? { md: 8, sm: 24 } : { md: 6, sm: 24 };
   const collapseFormCol = { md: 8, sm: 24 };
   const buttonsCol = {
@@ -48,118 +52,96 @@ function SearchForm({
     // 第一行
     [{
       label: '单据日期',
-      type: 'rangePicker',
-      id: 'queryDate',
+      type: 'datePicker',
+      id: 'billDateSection',
       formCol,
-    },
-    {
-      label: '供应商',
-      id: 'supplierName',
-      type: 'text',
-      formCol,
-      placeholder: consts.supplierPlaceholder,
-      onClick: function () {
-        dispatch({ type: 'common/supplierModalVisibileReduce', payload: true });
-        dispatch({ type: 'common/getAllSupplier' });
-      },
-    },
-    {
-      label: '供应商id',
-      id: 'supplierId',
-      type: 'text',
-      formCol: { md: 0 },
-    },
-    {
-      id: 'legalPersonId',
+      format: 'YYYY-MM',
+      subType: 'monthPicker',
+    }, {
+      label: '法人主体',
+      id: 'legalName',
       // 同select属性,可以附加 select的属性
       type: 'select',
-      label: '法人主体',
       formCol,
+      // input数据
       data: allCorporation.map((item, index) => {
         return { value: item.corporationId, key: index, text: item.corporationName };
       }),
+    }, {
+      label: '调出仓库',
+      id: 'warehouseNameOut',
+      type: 'select',
+      formCol,
+      data: arrayToSelectOptions(warehouseNameOut),
     }],
   ];
-  const voucherStatus = [];
-  const voucherStatusObj = allVoucherStatus;
-
-  // 单据状态返回的是json
-  for (const key in voucherStatusObj) {
-    voucherStatus.push({ value: key, text: voucherStatusObj[key] });
-  }
   const collapseFormItemsConfig = [
     // 第二行
     [{
-      label: '订单编号',
-      type: 'text',
-      id: 'purchaseOrderId',
-      formCol: { ...collapseFormCol },
-    }, {
-      id: 'payWay',
-      // 同select属性,可以附加 select的属性
+      label: '调入仓库',
+      id: 'warehouseNameIn',
       type: 'select',
-      label: '付款方式',
       formCol: { ...collapseFormCol },
-      data: allPaymentMethod.map((item, index) => {
-        return { value: item.paymentMethodId, key: index, text: item.method };
-      }),
+      data: arrayToSelectOptions(warehouseNameIn),
     }, {
-      id: 'currency',
-      // 同select属性,可以附加 select的属性
-      type: 'select',
-      label: '币别',
-      formCol: { ...collapseFormCol },
-      data: currency,
-    }],
-    // 第三行
-    [{
-      label: 'SKU名称',
+      label: 'SKU',
+      id: 'sku',
       type: 'text',
-      id: 'skuCode',
       formCol: { ...collapseFormCol },
     }, {
       label: 'UPC',
-      type: 'text',
       id: 'upc',
-      formCol: { ...collapseFormCol },
-    }, {
-      label: '采购人',
       type: 'text',
-      id: 'buyerName',
       formCol: { ...collapseFormCol },
     }],
-    // 第四行
+    // 第三行
     [{
-      label: '单据状态',
-      type: 'select',
-      id: 'voucherStatus',
+      label: '调拨单号',
+      id: 'transferNo',
+      type: 'text',
       formCol: { ...collapseFormCol },
-      data: voucherStatus,
+    }, {
+      label: '调入部门',
+      type: 'select',
+      id: 'departNameIn',
+      formCol: { ...collapseFormCol },
+      data: arrayToSelectOptions(departNameIn),
+    }, {
+      label: '调出部门',
+      type: 'select',
+      id: 'departNameOut',
+      formCol: { ...collapseFormCol },
+      data: arrayToSelectOptions(departNameIn).reverse(),
+    }],
+    [{
+      label: '调拨日期',
+      type: 'rangePicker',
+      id: 'pushTimeSection',
+      formCol: { ...collapseFormCol },
     }, {
       label: '单据号',
       type: 'text',
-      id: 'voucherNumber',
+      id: 'number',
       formCol: { ...collapseFormCol },
-    }, {
-      id: 'orgId',
-      // 同select属性,可以附加 select的属性
-      type: 'select',
-      label: '事业部',
-      formCol: { ...collapseFormCol },
-      data: allOrg.map((item) => {
-        return { value: item.name, text: item.name };
-      }),
     },
-    ],
-    [{
-      type: 'custom',
-      formCol: { md: 24 },
-      component: <FormButtons
-        form={form}
-        dispatch={dispatch}
-        formCollapse={formCollapse}
-      />,
+    {
+      label: '单据状态',
+      type: 'select',
+      id: 'status',
+      formCol: { ...collapseFormCol },
+      data: jsonToSelectOptions(allVoucherStatus),
     }],
+    [
+      {
+        type: 'custom',
+        formCol: { md: 24 },
+        component: <FormButtons
+          form={form}
+          dispatch={dispatch}
+          formCollapse={formCollapse}
+        />,
+      },
+    ],
   ];
   let formItemsResult = formItemsConfig;
   // form展开
@@ -168,7 +150,29 @@ function SearchForm({
     formItemsResult = [formItemsConfigLastNode.concat([buttonsCol])];
   }
   const toolMarginTop = { marginTop: '20px' };
-  const marmginRight = { marginRight: '10px' };
+  const marmginSpace = { margin: '0 12px' };
+  const approveDataHandle = (e) => {
+    const target = e.target.id;
+    let url = '';
+    switch (target) {
+      case 'revokeAudit':
+        url = '/transfereout/revokeAudit';
+        break;
+      default:
+        url = false;
+    }
+    if (!url) {
+      return;
+    }
+    dispatch({
+      type: 'common/commonApproveData',
+      payload: {
+        selectedRowsArr,
+        paramKey: 'ids',
+        url: `${consts.domainTransferReceiptInternal}/${url}`,
+      },
+    });
+  };
   return (
     <span>
       <GlobalSearchForm
@@ -180,6 +184,15 @@ function SearchForm({
       />
       <Row>
         <Col style={toolMarginTop}>
+          <GlobalExportForm
+            url={`${consts.domainTransferReceiptInternal}/transfereout/exportExcel`}
+            form={form}
+            exportInputs={exportInputs}
+            dispatch={dispatch}
+            reduceName={`${packageConst.modelNameSapce}/exportInputsReduce`}
+            buttonType="primary"
+          />
+          {/* <Button style={marmginSpace} onClick={approveDataHandle} id="revokeAudit">撤销审核</Button> */}
           <PushEas
             buttonText="推送到金蝶"
             dispatch={dispatch}
@@ -190,17 +203,16 @@ function SearchForm({
             modelNameSapce="common"
             selectedRowsArr={selectedRowsArr}
             pushEasResponse={pushEasResponse}
-            buttonType="primary"
-            wsUrl={`${consts.wsUrl}/socket`}
-            style={marmginRight}
-            pushEasUrl={`${consts.domain}/${packageConst.pushEasName}/pushEas`}
-          />
-          <GlobalExportForm
-            url={`${consts.domain}/api/getPurchaseOrderList/export`}
-            form={form}
-            dispatch={dispatch}
-            reduceName={`${packageConst.modelNameSapce}/exportInputsReduce`}
-            exportInputs={exportInputs}
+            pushEasUrl={`${consts.domainTransferReceiptInternal}/transfereout/submitCertificate`}
+            // pushEasUrlMethod="post"
+            // websocket 请求地址
+            wsUrl={`${consts.wsUrl2}/socket`}
+            isFormatDate={undefined}
+            dateStartFormat='YYYYMM'
+            // uuid地址
+            fetchUUIDUrl={`${consts.domainTransferReceiptInternal}/common/fetchUUID`}
+            style={marmginSpace}
+          // pushEasCondition="selectRows"
           />
         </Col>
       </Row>
@@ -220,9 +232,10 @@ function SearchForm({
         globalPagationParam={globalPagationParam}
       />
     </span>
+
   );
 }
-SearchForm.PropTypes = {
+SearchForm.propTypes = {
   allOrg: PropTypes.array,
   currency: PropTypes.array,
   allCorporation: PropTypes.array,
@@ -236,8 +249,9 @@ SearchForm.PropTypes = {
   loading: PropTypes.bool,
 };
 const SearchFormWrapped = Form.create(consts.formCreateOptions)(SearchForm);
-function mapStateToProps({ common, purchaseOrders }) {
-  const { loading, selectedRowsArr, exportInputs } = purchaseOrders;
-  return { ...common, loading, selectedRowsArr, exportInputs };
+
+function mapStateToProps({ common, transferReceiptInternal }) {
+  const { loading, selectedRowsArr, exportInputs, departNameIn, warehouseNameIn, warehouseNameOut } = transferReceiptInternal;
+  return { ...common, loading, selectedRowsArr, exportInputs, departNameIn, warehouseNameIn, warehouseNameOut };
 }
 export default connect(mapStateToProps)(SearchFormWrapped);

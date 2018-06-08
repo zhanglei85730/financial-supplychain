@@ -18,7 +18,7 @@ function FormButtons({
   const handleSubmit = (e) => {
     e.preventDefault();
     form.validateFields((err, fieldsValue) => {
-      const formparams = formParamsFormater(fieldsValue);
+      const formparams = formParamsFormater(fieldsValue, undefined, 'YYYYMM', 'YYYYMM');
       const payloadData = Object.assign(
         formparams,
         consts.initPagination,

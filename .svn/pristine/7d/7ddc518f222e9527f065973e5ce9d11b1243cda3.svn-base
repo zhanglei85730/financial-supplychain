@@ -37,10 +37,9 @@ function SearchForm({
     [{
       label: '日期',
       type: 'datePicker',
-      subType: 'rangePicker',
-      id: 'dates',
+      subType: 'monthPicker',
+      id: 'datePeriod',
       formCol,
-      format: 'YYYY-MM'
     },
     {
       label: '单号',
@@ -231,10 +230,6 @@ function SearchForm({
             dispatch={dispatch}
             reduceName={`${packageConst.modelNameSapce}/exportInputsReduce`}
             buttonType="primary"
-            isFormatDate={undefined}
-            customDateFamat={{ dates: 'YYYYMM' }}
-            buttonText="导出明细"
-
           />
           <Upload
             className="exportBtnInline"

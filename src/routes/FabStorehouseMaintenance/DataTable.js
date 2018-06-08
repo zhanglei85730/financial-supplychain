@@ -227,7 +227,7 @@ class DataTable extends React.Component {
           rowSelection={rowSelection}
           loading={loading}
           style={{ marginTop: '20px' }}
-          scroll={Object.assign(consts.globalTableScroll, { x: 3500 })}
+          scroll={Object.assign(consts.globalTableScroll, { x: 2100 })}
           pagination={{
             total,
             defaultPageSize: consts.defaultPageSize,

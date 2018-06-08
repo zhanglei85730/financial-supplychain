@@ -426,7 +426,7 @@ export function stringParamsToArray(fieldsValue, field) {
  * @param {*} isFormatDate 是否格式化日期参数 默认格式化为 'YYYY-MM-DD 00:00:00' ,如果传入非undefined就是不格式化日期
  * @param {*} startFromatDate  日期时间段 开始日期
  * @param {*} endFromatDate 日期时间段 结束日期
- * @param {*} endFromatDate 自定义将form表格参数转换为字符串格式 {date:'YYYY-MM-dd',aa:'YYYY-MM-dd'} rangPicker同样支持
+ * @param {*} endFromatDate 自定义将form表格参数转换为字符串格式 {date:'YYYY-MM-dd',aa:'YYYY-MM-dd'}
  */
 export function formParamsFormater(fieldsValue, isFormatDate, startFromatDate = 'YYYY-MM-DD 00:00:00', endFromatDate = 'YYYY-MM-DD 23:59:59', customFieldDateFormat = {}) {
   if (typeof (fieldsValue) !== 'object') {
@@ -436,23 +436,10 @@ export function formParamsFormater(fieldsValue, isFormatDate, startFromatDate = 
   const customFields = Object.keys(customFieldDateFormat);
   if (customFields.length > 0) {
     for (let i = 0; i < customFields.length; i++) {
-      if (!fieldsValue.hasOwnProperty(customFields[i])) {
-        continue;
-      }
-      const paramOfFields = fieldsValue[customFields[i]];
-      const customKey = customFields[i];
-      // Moment对象数组
-      if (Array.isArray(paramOfFields) && paramOfFields.length > 0) {
-        const tempArr = [];
-        paramOfFields.forEach((item) => {
-          tempArr.push(`${item.format(customFieldDateFormat[customKey])}`);
-        });
-        Object.assign(fieldsValue, { [customKey]: tempArr.join(',') });
-        // 非数组Moment对象
-      } else if (!Array.isArray(paramOfFields) && fieldsValue.hasOwnProperty(customKey) &&
-        paramOfFields.hasOwnProperty('_isAMomentObject')) {
+      if (fieldsValue.hasOwnProperty(customFields[i]) &&
+        fieldsValue[customFields[i]].hasOwnProperty('_isAMomentObject')) {
         try {
-          Object.assign(fieldsValue, { [customKey]: paramOfFields.format(customFieldDateFormat[customKey]) });
+          Object.assign(fieldsValue, { [customFields[i]]: fieldsValue[customFields[i]].format(customFieldDateFormat[customFields[i]]) });
         } catch (e) {
 
         }

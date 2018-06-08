@@ -18,14 +18,6 @@ function DataTable({
   const tdWidth = { width: 150 };
   const columns = [
     {
-      title: '条件',
-      key: 'params',
-      dataIndex: 'params',
-      width: 220,
-      render: (value) => {
-        return <div className={styles.twoLine} title={value}>{value}</div>
-      }
-    }, {
       title: '状态',
       key: 'status',
       dataIndex: 'status',
@@ -45,6 +37,15 @@ function DataTable({
       key: 'tableType',
       dataIndex: 'tableType',
       width: 210,
+    },
+    {
+      title: '条件',
+      key: 'params',
+      dataIndex: 'params',
+      width: 220,
+      render: (value) => {
+        return <div className={styles.twoLine} title={value}>{value}</div>
+      },
     },
   ];
 

@@ -426,73 +426,53 @@ export function stringParamsToArray(fieldsValue, field) {
  * @param {*} isFormatDate 是否格式化日期参数 默认格式化为 'YYYY-MM-DD 00:00:00' ,如果传入非undefined就是不格式化日期
  * @param {*} startFromatDate  日期时间段 开始日期
  * @param {*} endFromatDate 日期时间段 结束日期
- * @param {*} endFromatDate 自定义将form表格参数转换为字符串格式 {date:'YYYY-MM-dd',aa:'YYYY-MM-dd'} rangPicker同样支持
  */
-export function formParamsFormater(fieldsValue, isFormatDate, startFromatDate = 'YYYY-MM-DD 00:00:00', endFromatDate = 'YYYY-MM-DD 23:59:59', customFieldDateFormat = {}) {
+export function formParamsFormater(fieldsValue, isFormatDate, startFromatDate = 'YYYY-MM-DD 00:00:00', endFromatDate = 'YYYY-MM-DD 23:59:59') {
   if (typeof (fieldsValue) !== 'object') {
     return {};
   }
-  // 如果自定义field日期格式类型 把日期格式转换为相应的字符串格式
-  const customFields = Object.keys(customFieldDateFormat);
-  if (customFields.length > 0) {
-    for (let i = 0; i < customFields.length; i++) {
-      if (!fieldsValue.hasOwnProperty(customFields[i])) {
-        continue;
-      }
-      const paramOfFields = fieldsValue[customFields[i]];
-      const customKey = customFields[i];
-      // Moment对象数组
-      if (Array.isArray(paramOfFields) && paramOfFields.length > 0) {
-        const tempArr = [];
-        paramOfFields.forEach((item) => {
-          tempArr.push(`${item.format(customFieldDateFormat[customKey])}`);
-        });
-        Object.assign(fieldsValue, { [customKey]: tempArr.join(',') });
-        // 非数组Moment对象
-      } else if (!Array.isArray(paramOfFields) && fieldsValue.hasOwnProperty(customKey) &&
-        paramOfFields.hasOwnProperty('_isAMomentObject')) {
-        try {
-          Object.assign(fieldsValue, { [customKey]: paramOfFields.format(customFieldDateFormat[customKey]) });
-        } catch (e) {
-
-        }
-      }
-    }
-  }
-  // 兼容老的转换方式
   const formatDate = isFormatDate === undefined ? true : false;
   const params = {};
   for (const key in fieldsValue) {
     if (fieldsValue[key] !== undefined && fieldsValue[key] !== '' && fieldsValue[key] !== null) {
-      if (Array.isArray(fieldsValue[key])) {
-        // 时间范围  Moment对象
-        if (fieldsValue[key].length === 2 && fieldsValue[key][0].hasOwnProperty('_isAMomentObject') &&
-          fieldsValue[key][0]['_isAMomentObject']) {
-          if (formatDate) {
+      // 格式化数据
+      if (formatDate) {
+        // 如果为数数组
+        if (Array.isArray(fieldsValue[key])) {
+          //
+          // 时间范围  Moment对象
+          if (fieldsValue[key].length === 2 &&
+            fieldsValue[key][0].hasOwnProperty('_isAMomentObject') &&
+            fieldsValue[key][0]['_isAMomentObject']) {
             params[key] = `${fieldsValue[key][0].format(`${startFromatDate}`)},${fieldsValue[key][1].format(`${endFromatDate}`)}`;
+            // 日期 非时间段 多选select
           } else {
-            params[key] = fieldsValue[key];
+            try {
+              // 去除首尾空白
+              params[key] = fieldsValue[key].join(',').match(/[^\s]+.*[^\s]+/)[0];
+            } catch (e) {
+              params[key] = fieldsValue[key].join(',');
+            }
           }
+          // 非数组
         } else {
-          try {
-            // 去除首尾空白
-            params[key] = fieldsValue[key].join(',').match(/[^\s]+.*[^\s]+/)[0];
-          } catch (e) {
-            params[key] = fieldsValue[key].join(',');
+          // moment对象
+          if (fieldsValue[key].hasOwnProperty('_isAMomentObject') && fieldsValue[key]['_isAMomentObject']) {
+            params[key] = `${fieldsValue[key].format(`${startFromatDate}`)}`;
+          } else {
+            try {
+              // 去除首尾空白
+              params[key] = fieldsValue[key].match(/[^\s]+.*[^\s]+/)[0];
+            } catch (e) {
+              params[key] = fieldsValue[key];
+            }
           }
         }
-        // 非数组
       } else {
-        // moment对象
-        if (formatDate && fieldsValue[key].hasOwnProperty('_isAMomentObject') && fieldsValue[key]['_isAMomentObject']) {
-          params[key] = `${fieldsValue[key].format(`${startFromatDate}`)}`;
-        } else {
-          try {
-            // 去除首尾空白
-            params[key] = fieldsValue[key].match(/[^\s]+.*[^\s]+/)[0];
-          } catch (e) {
-            params[key] = fieldsValue[key];
-          }
+        try {
+          params[key] = typeof (fieldsValue[key]) === 'string' ? fieldsValue[key].match(/[^\s]+.*[^\s]+/)[0] : fieldsValue[key];
+        } catch (e) {
+          params[key] = fieldsValue[key];
         }
       }
     }

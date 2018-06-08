@@ -21,7 +21,7 @@ export default {
   // 开发部署到域名
   // thisDomain: 'http://financial-supplychain-web.aukeyit.com/',
   // fba仓库维护、SKU部门维护(谢)http://financial-fba-inventory.aukeyit.com http://192.168.25.236:9099
-  domainFabStorehouseMaintenance: 'http://financial-fba-inventory.aukeyit.com',
+  domainFabStorehouseMaintenance: 'http://192.168.25.236:9099',
   // 业务类型维护(吴耿锋)  http://kis-supplychain.aukeyit.com http://192.168.25.125:9252
   domainBusinessTypeMaintenance: 'http://kis-supplychain.aukeyit.com',
   // 销售出库(吴耿锋)  http://kis-supplychain.aukeyit.com http://192.168.25.125:9252
@@ -40,8 +40,8 @@ export default {
   // 亚马逊盘点(谢犇)http://192.168.25.236:9099
   domainAmazonInventory: 'http://financial-fba-inventory.aukeyit.com',
   // 调拨单据(秦宗列)
-  // domainTransferReceiptInternal: 'http://192.168.25.70:9095 http://legal-allot.aukeyit.com',
-  domainTransferReceiptInternal: 'http://192.168.25.70:9095',
+  // domainTransferReceiptInternal: 'http://192.168.25.70:9095',
+  domainTransferReceiptInternal: 'http://legal-allot.aukeyit.com',
   mockDomain: 'http://localhost:8000',
   routePrefix: '/',
   // 正式websocket
